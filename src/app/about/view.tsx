@@ -1,14 +1,12 @@
 "use client";
 import Link from "next/link";
-import WrapperComponent from "~/hoc/WrapperComponent";
 import Image from "next/image";
-import { CustomizedButtons } from "./UI/CustomButton";
-import githubIcon from "../assets/github.png";
+import { Button } from "@mui/material";
 
-function About() {
+export const AboutView: React.FC = () => {
   return (
-    <div className="min-h-screen px-[15px] py-[30px]">
-      <h1 className="xs:text-[50px] mt-2 text-[40px] font-black text-white sm:text-[60px] lg:text-[80px] lg:leading-[98px]">
+    <div className="min-h-screen px-4 py-8">
+      <h1 className="xs:text-[50px] mt-2 text-6xl font-black text-white sm:text-[60px] lg:text-[80px] lg:leading-[98px]">
         Jazz Music App
       </h1>
 
@@ -20,7 +18,7 @@ function About() {
         objectFit="cover"
         className="absolute left-0 top-0 z-[-1] blur-sm"
       />
-      <p className="text-secondary my-4 max-w-5xl text-[17px] leading-[30px] text-white">
+      <p className="text-secondary my-4 max-w-5xl text-lg leading-8 text-white">
         Jazz Music App - це веб-додаток, завдяки його зручному інтерфейсу
         користувачі можуть легко створювати та управляти своїми обліковими
         записами, використовуючи реєстраційну систему. Основна функціональність
@@ -30,10 +28,8 @@ function About() {
         їх до списку улюблених.
       </p>
       <Link href="https://github.com/Exclusive-PG/next-jazz-music-client">
-        <CustomizedButtons textBtn="Github" image={githubIcon} />
+        <Button variant="contained">Github</Button>
       </Link>
     </div>
   );
-}
-
-export default WrapperComponent(About);
+};
