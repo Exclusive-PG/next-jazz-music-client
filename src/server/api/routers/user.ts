@@ -8,13 +8,6 @@ import {
 import bcrypt from "bcrypt";
 
 export const userRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
   registerUser: publicProcedure
     .input(z.object({ email: z.string(), password: z.string() }))
     .mutation(async ({ ctx, input }) => {

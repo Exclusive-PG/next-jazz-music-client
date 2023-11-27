@@ -3,7 +3,7 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { type AppProps } from "next/app";
-import { ILogin } from "~/validation/validAuth";
+import { LoginSchema } from "~/domains/auth/validAuth";
 import { Button } from "@mui/material";
 import { NextPage } from "next/types";
 import { api } from "./../../trpc/react";
@@ -15,22 +15,21 @@ export const SignUpForm: NextPage<Props> = (props) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ILogin>();
+  } = useForm<LoginSchema>();
 
-  const registerUser = api.user.registerUser.useMutation({
-    onSuccess: (user) => {
-      console.log(user);
-    },
-    onError: (err) => {
-      console.log(err.message);
-    },
-  });
-  const onSubmit: SubmitHandler<ILogin> = async (data) => {
-    registerUser.mutate({ ...data });
+  const registerUser = api.user.registerUser.useMutation();
+  
+  const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
+    try {
+      registerUser.mutateAsync({ ...data });
+      console.log("Successfully registered");
+    } catch (error) {
+      console.log((error as Error).message);
+    }
   };
 
   return (
-    <div className="radius flex flex-col items-center gap-2 border p-4">
+    <div className="flex flex-col items-center gap-2 border p-4">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex items-center justify-center"

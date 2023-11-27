@@ -1,29 +1,32 @@
 "use client";
 
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { signIn } from "next-auth/react";
+import { ClientSafeProvider, LiteralUnion, signIn } from "next-auth/react";
 import { type AppProps } from "next/app";
-import { ILogin } from "~/validation/validAuth";
+import { LoginSchema } from "~/domains/auth/validAuth";
 import { Button } from "@mui/material";
 import { NextPage } from "next/types";
 import Image from "next/image";
 import { Session } from "next-auth";
 import { redirect } from "next/navigation";
+import { BuiltInProviderType } from "next-auth/providers";
 type Props = {
-  //providers: Record<LiteralUnion<BuiltInProviderType, string>, ClientSafeProvider>| null
-  providers: any;
+  providers: Record<
+    LiteralUnion<BuiltInProviderType, string>,
+    ClientSafeProvider
+  > | null ;
   session: Session | null;
 };
-//{ providers }: { providers: AppProps }
+
 export const LoginForm: NextPage<Props> = ({ providers, session }) => {
   console.log(providers);
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ILogin>();
+  } = useForm<LoginSchema>();
 
-  const onSubmit: SubmitHandler<ILogin> = async (data) => {
+  const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
     console.log(data);
     await signIn("credentials", { ...data, callbackUrl: "/dashboard" });
   };
@@ -58,12 +61,12 @@ export const LoginForm: NextPage<Props> = ({ providers, session }) => {
         </Button>
       </form>
       <div className="flex items-center justify-center pt-4">
-        {Object.values(providers)?.map(
+        
+        {providers !== null && Object.values(providers)?.map(
           (item: any) =>
             item.id !== "credentials" && (
-              <div className="justify-content flex ml-3">
+              <div className="justify-content ml-3 flex" key={item.id}>
                 <Button
-                  key={item.id}
                   color="primary"
                   variant="outlined"
                   aria-label="outlined primary button group"

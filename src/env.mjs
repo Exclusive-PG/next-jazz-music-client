@@ -33,6 +33,8 @@ export const env = createEnv({
     DISCORD_CLIENT_SECRET: z.string(),
     GITHUB_CLIENT_ID: z.string(),
     GITHUB_CLIENT_SECRET: z.string(),
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_SECRET: z.string(),
   },
 
   /**
@@ -42,6 +44,13 @@ export const env = createEnv({
    */
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_FB_apiKey: z.string(),
+    NEXT_PUBLIC_FB_authDomain: z.string(),
+    NEXT_PUBLIC_FB_projectId: z.string(),
+    NEXT_PUBLIC_FB_storageBucket: z.string(),
+    NEXT_PUBLIC_FB_messagingSenderId: z.string(),
+    NEXT_PUBLIC_FB_appId: z.string(),
+    NEXT_PUBLIC_FB_measurementId: z.string(),
   },
 
   /**
@@ -57,6 +66,16 @@ export const env = createEnv({
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+
+    NEXT_PUBLIC_FB_apiKey: process.env.NEXT_PUBLIC_FB_apiKey,
+    NEXT_PUBLIC_FB_authDomain: process.env.NEXT_PUBLIC_FB_authDomain,
+    NEXT_PUBLIC_FB_projectId: process.env.NEXT_PUBLIC_FB_projectId,
+    NEXT_PUBLIC_FB_storageBucket: process.env.NEXT_PUBLIC_FB_storageBucket,
+    NEXT_PUBLIC_FB_messagingSenderId: process.env.NEXT_PUBLIC_FB_messagingSenderId,
+    NEXT_PUBLIC_FB_appId: process.env.NEXT_PUBLIC_FB_appId,
+    NEXT_PUBLIC_FB_measurementId: process.env.NEXT_PUBLIC_FB_measurementId,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
