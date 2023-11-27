@@ -40,24 +40,24 @@ declare module "next-auth" {
  *
  * @see https://next-auth.js.org/configuration/options
  */
-export const authOptions: NextAuthOptions = {
+export const defaultAuthOptions = {
   pages: {
     signIn: "/login",
     newUser: "/signup",
   },
+
   callbacks: {
-    session: ({ token, session }) => {
-      console.log("Session Callback", { token, session });
+    session: ({ token, session, user }) => {
+      console.log("session :>> ", session, user);
       return {
         ...session,
         user: {
           ...session.user,
-          id: token.id,
+          id: token?.id ?? user.id,
         },
       };
     },
     jwt: ({ token, user, account }) => {
-      console.log("JWT Callback", { token, user });
       if (user) {
         return {
           ...token,
@@ -67,14 +67,24 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
   },
-  debug: true,
+
+  debug: process.env.NODE_ENV === "development",
+
   session: {
-    strategy: "jwt",
+    maxAge: 1 * 24 * 60 * 60,
   },
+
+  jwt: {
+    maxAge: 1 * 24 * 30 * 60,
+  },
+
+  adapter: PrismaAdapter(db),
+
   providers: [
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
+      
     }),
     GithubProvider({
       clientId: env.GITHUB_CLIENT_ID,
@@ -89,12 +99,9 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials) {
-        console.log("credentials", credentials);
         const cred = await loginSchema.parseAsync(credentials);
         const user = await db.user.findFirst({ where: { email: cred.email } });
 
-        console.log("Cred", cred.email);
-        console.log("User", user);
         if (!user) {
           console.log("User scope", user);
           return null;
@@ -112,6 +119,21 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-};
+  events: {
+    async signOut({ session }) {
+      const { sessionToken = "" } = session as unknown as {
+        sessionToken?: string;
+      };
 
-export const getServerAuthSession = () => getServerSession(authOptions);
+      if (sessionToken) {
+        await db.session.deleteMany({
+          where: {
+            sessionToken,
+          },
+        });
+      }
+    },
+  },
+} satisfies NextAuthOptions;
+
+export const getServerAuthSession = () => getServerSession(defaultAuthOptions);

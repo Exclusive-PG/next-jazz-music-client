@@ -1,10 +1,7 @@
 import { TRPCError } from "@trpc/server";
-import { string, z } from "zod";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
+import {} from "next-auth";
+import { z } from "zod";
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import bcrypt from "bcrypt";
 
 export const userRouter = createTRPCRouter({
@@ -27,14 +24,31 @@ export const userRouter = createTRPCRouter({
           message: `User already with email ${email} already exists.`,
         });
       }
+
       const saltRounds = 8;
       const salt = bcrypt.genSaltSync(saltRounds);
       const hash = bcrypt.hashSync(password, salt);
-      return await ctx.db.user.create({
-        data: {
-          email: email,
-          password: hash,
-        },
+
+      const createdUser = await ctx.db.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            email: email,
+            password: hash,
+          },
+        });
+
+        await tx.account.create({
+          data: {
+            userId: user.id,
+            provider: "credentials",
+            type: "credentials",
+            providerAccountId: user.id,
+          },
+        });
+
+        return user;
       });
+
+      return createdUser;
     }),
 });
