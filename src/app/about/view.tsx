@@ -6,7 +6,7 @@ import { Button } from "@mui/material";
 export const AboutView: React.FC = () => {
   return (
     <div className="min-h-screen px-4 py-8">
-      <h1 className="xl:text-5xl mt-2 text-6xl font-black text-white sm:text-5xl lg:text-7xl lg:leading-10">
+      <h1 className="mt-2 text-6xl font-black text-white sm:text-5xl lg:text-7xl lg:leading-10 xl:text-5xl">
         Jazz Music App
       </h1>
 

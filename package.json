@@ -24,6 +24,7 @@
     "@trpc/next": "^10.37.1",
     "@trpc/react-query": "^10.37.1",
     "@trpc/server": "^10.37.1",
+    "@types/uuid": "^9.0.7",
     "bcrypt": "^5.1.1",
     "cookies-next": "^4.1.0",
     "firebase": "^10.6.0",
@@ -31,8 +32,10 @@
     "next-auth": "^4.24.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.48.2",
     "superjson": "^1.13.1",
+    "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {

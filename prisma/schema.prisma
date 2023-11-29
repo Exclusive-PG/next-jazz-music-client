@@ -7,7 +7,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-
 // Necessary for Next auth
 model Account {
     id                String  @id @default(cuid())
@@ -44,12 +43,16 @@ model User {
     password      String?
     accounts      Account[]
     sessions      Session[]
+    tracks         Track[]
 }
 
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
-
-    @@unique([identifier, token])
+model Track {
+    id     String @id @default(cuid())
+    name   String
+    singer String
+    ref    String
+    url    String
+    user   User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    userId String
 }
+
