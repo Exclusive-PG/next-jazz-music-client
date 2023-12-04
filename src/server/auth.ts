@@ -35,7 +35,6 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     session: ({ token, session, user }) => {
-      console.log("session :>> ", session, user);
       return {
         ...session,
         user: {
@@ -55,7 +54,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   debug: process.env.NODE_ENV === "development",
-
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "database",
     maxAge: 1 * 24 * 60 * 60,
@@ -83,16 +82,11 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials) {
-        console.log("credentials", credentials);
         const cred = await loginSchema.parseAsync(credentials);
         const user = await db.user.findFirst({ where: { email: cred.email } });
 
-        console.log("Cred", cred.email);
-        console.log("User", user);
-        if (!user) {
-          console.log("User scope", user);
-          return null;
-        }
+        if (!user) return null;
+
         const isValidPassword = bcrypt.compareSync(
           cred.password,
           user.password!,

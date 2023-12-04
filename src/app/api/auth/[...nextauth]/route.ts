@@ -54,7 +54,6 @@ function handler(
     jwt: {
       ...authOptions.jwt,
       encode: async (arg) => {
-        console.log("encode", arg);
         if (isCredentialsCallback) {
           const cookie = cookies().get("next-auth.session-token");
 
@@ -66,7 +65,6 @@ function handler(
       },
 
       decode: async (arg) => {
-        console.log("decode", arg);
         if (isCredentialsCallback) {
           return null;
         }

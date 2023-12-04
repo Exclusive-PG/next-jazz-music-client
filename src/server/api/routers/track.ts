@@ -6,13 +6,14 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
-export const uploadRouter = createTRPCRouter({
-  getFiles: protectedProcedure.mutation(async ({ ctx, input }) => {
-    return await ctx.db.track.findMany({
+export const trackRouter = createTRPCRouter({
+  getFiles: protectedProcedure.query(async ({ ctx }) => {
+    const tracks = await ctx.db.track.findMany({
       where: {
         userId: ctx.session.user.id,
       },
     });
+    return tracks;
   }),
   deleteFile: protectedProcedure
     .input(
@@ -22,7 +23,6 @@ export const uploadRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { trackId } = input;
-      console.log(input);
       return await ctx.db.track.delete({
         where: {
           id: trackId,
@@ -36,20 +36,18 @@ export const uploadRouter = createTRPCRouter({
         singer: z.string(),
         ref: z.string(),
         url: z.string(),
-        userId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        const { name, singer, url, ref, userId } = input;
-        console.log(input);
+        const { name, singer, url, ref } = input;
         await ctx.db.track.create({
           data: {
             name: name,
             ref: ref,
             singer: singer,
             url: url,
-            userId: userId,
+            userId: ctx.session.user.id,
           },
         });
       } catch (error) {
@@ -65,7 +63,6 @@ export const uploadRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { trackId, url } = input;
-      console.log(input);
       return await ctx.db.track.update({
         data: {
           url,
