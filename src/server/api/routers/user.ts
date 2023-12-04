@@ -23,11 +23,26 @@ export const userRouter = createTRPCRouter({
       const saltRounds = 8;
       const salt = bcrypt.genSaltSync(saltRounds);
       const hash = bcrypt.hashSync(password, salt);
-      return await ctx.db.user.create({
-        data: {
-          email: email,
-          password: hash,
-        },
+
+      const createdUser = await ctx.db.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            email: email,
+            password: hash,
+          },
+        });
+
+        await tx.account.create({
+          data: {
+            userId: user.id,
+            provider: "credentials",
+            type: "credentials",
+            providerAccountId: user.id,
+          },
+        });
+
+        return user;
       });
+      return createdUser;
     }),
 });

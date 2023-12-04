@@ -1,5 +1,3 @@
-
-
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import {
   getServerSession,
@@ -36,18 +34,16 @@ export const authOptions: NextAuthOptions = {
     newUser: "/signup",
   },
   callbacks: {
-    session: ({ token, session }) => {
-      console.log("Session Callback", { token, session });
+    session: ({ token, session, user }) => {
       return {
         ...session,
         user: {
           ...session.user,
-          id: token.id,
+          id: token?.id ?? user.id,
         },
       };
     },
     jwt: ({ token, user, account }) => {
-      console.log("JWT Callback", { token, user });
       if (user) {
         return {
           ...token,
@@ -57,14 +53,17 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
   },
-  debug: true,
+  debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
-    strategy: "jwt",
+    strategy: "database",
+    maxAge: 1 * 24 * 60 * 60,
   },
+  adapter: PrismaAdapter(db),
   providers: [
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,    
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
@@ -83,16 +82,11 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials) {
-        console.log("credentials", credentials);
         const cred = await loginSchema.parseAsync(credentials);
         const user = await db.user.findFirst({ where: { email: cred.email } });
 
-        console.log("Cred", cred.email);
-        console.log("User", user);
-        if (!user) {
-          console.log("User scope", user);
-          return null;
-        }
+        if (!user) return null;
+
         const isValidPassword = bcrypt.compareSync(
           cred.password,
           user.password!,
@@ -106,6 +100,21 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  events: {
+    async signOut({ session }) {
+      const { sessionToken = "" } = session as unknown as {
+        sessionToken?: string;
+      };
+
+      if (sessionToken) {
+        await db.session.deleteMany({
+          where: {
+            sessionToken,
+          },
+        });
+      }
+    },
+  },
 };
 
 export const getServerAuthSession = () => getServerSession(authOptions);

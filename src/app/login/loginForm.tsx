@@ -19,7 +19,6 @@ type Props = {
 };
 
 export const LoginForm: NextPage<Props> = ({ providers, session }) => {
-  console.log(providers);
   const {
     register,
     handleSubmit,
@@ -27,12 +26,8 @@ export const LoginForm: NextPage<Props> = ({ providers, session }) => {
   } = useForm<LoginSchema>();
 
   const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
-    console.log(data);
     await signIn("credentials", { ...data, callbackUrl: "/dashboard" });
   };
-  if (session) {
-    redirect("/api/auth/signout");
-  }
   return (
     <div className="pt-60">
       <form
