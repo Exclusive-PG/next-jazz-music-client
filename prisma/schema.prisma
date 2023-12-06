@@ -43,16 +43,18 @@ model User {
     password      String?
     accounts      Account[]
     sessions      Session[]
-    tracks         Track[]
+    tracks        Track[]
 }
 
 model Track {
-    id     String @id @default(cuid())
-    name   String
-    singer String
-    ref    String
-    url    String
-    user   User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    userId String
+    id        String  @id @default(cuid())
+    name      String
+    singer    String
+    ref       String
+    url       String
+    duration  Int
+    posterUrl String?
+    albumn    String?
+    user      User    @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    userId    String
 }
-

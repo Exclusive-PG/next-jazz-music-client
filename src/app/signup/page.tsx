@@ -1,4 +1,4 @@
-import { Wrapper } from "./../../components/wrapper";
+import { Wrapper } from "../../components/wrapper";
 import React from "react";
 import { LoginForm } from "~/app/login/loginForm";
 import { NextPage } from "next/types";
