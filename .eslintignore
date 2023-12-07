@@ -1,0 +1,8 @@
+node_modules/
+build/
+dist/
+.eslintrc.cjs
+.next/
+.vercel/
+next.config.js
+next-sitemap.config.js
