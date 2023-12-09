@@ -1,33 +1,39 @@
 "use client";
 
 import { Session } from "next-auth";
-import { signOut } from "next-auth/react";
 import { NextPage } from "next/types";
-import { useEffect, useState } from "react";
-import { Button } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { useCallback, useEffect, useState } from "react";
+import { Box, Button, LinearProgress } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { uploadService } from "~/services/upload";
 import { api } from "~/trpc/react";
-import { redirect, useRouter } from "next/navigation";
+import { Sidebar } from "~/components/sidebar/Sidebar";
 import { Track } from "@prisma/client";
-import LogoutIcon from "@mui/icons-material/Logout";
-import { useQuery } from "@tanstack/react-query";
+import { TrackItem } from "~/components/tracks/trackItem";
+import { FileDropzone } from "~/components/ui/dropzone";
+import { AudioPlayer } from "~/components/audio-kit/audioPlayer";
+import { Utils } from "~/utils/date-time";
 
-type Props = {
+//TO DO: add full responsive page
+export type PropsUploadPage = {
   session: Session | null;
 };
-export const UploadView: NextPage<Props> = ({ session }) => {
+export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   const [musicUpload, setMusicUpload] = useState<File>();
+  const onDrop = useCallback((acceptedFile: File[]) => {
+    if (acceptedFile.length === 0) return;
+    setMusicUpload(acceptedFile[0]);
+  }, []);
+
   const [progress, setProgress] = useState<number>(0);
-  const [src, setSrc] = useState<string>("");
+  const [currentTrack, setCurrentTrack] = useState<Track>();
   const queryUtils = api.useUtils();
   useEffect(() => {
     getTracks();
   }, []);
 
   const {
-    data: loadedTracks,
+    data: loadedTracks = [],
     refetch: getTracks,
     isFetched,
   } = api.tracks.getFiles.useQuery(undefined, {
@@ -59,13 +65,18 @@ export const UploadView: NextPage<Props> = ({ session }) => {
     );
 
     if (!uploadAction.status) return;
+
+    const duration: number = await Utils.getDuration(uploadAction.url!);
+
     await uploadTracks.mutateAsync({
       singer: "Unknown",
       name: musicUpload!.name.replace(/.mp3/gi, "")!,
       ref: uploadAction.ref!,
       url: uploadAction.url!,
+      duration,
     });
     getTracks();
+    setProgress(0);
   }
   async function deleteFile(trackId: string, trackRef: string) {
     const deleteAction = await uploadService.deleteFile(trackRef);
@@ -82,138 +93,67 @@ export const UploadView: NextPage<Props> = ({ session }) => {
     if (!updateAction.status) return;
     await updateTracks.mutateAsync({ trackId, url: updateAction.url! });
     getTracks();
+    setProgress(0);
   }
 
   return (
-    <div className="relative">
-      <input
-        type="file"
-        accept=".mp3"
-        name=""
-        id=""
-        onChange={(event) => {
-          const sellectFile =
-            event.target.files !== null &&
-            event.target.files !== undefined &&
-            event.target.files[0];
-          if (sellectFile) {
-            setMusicUpload(sellectFile);
-          }
-        }}
-      />
-      <div className="flex gap-10">
-        <Button onClick={uploadFile} variant="contained" color="success">
-          Upload File
-        </Button>
-      </div>
-      <div className="absolute right-0">
-        {session ? (
-          <Button onClick={() => signOut()} startIcon={<LogoutIcon />}>
-            Sign Out
+    <main className="bg-darkSecondary text-white">
+      <Sidebar session={session} />
+
+      <div className="ml-72 h-screen max-w-full p-4">
+        <h3 className="my-2 text-base text-white sm:text-base lg:text-xl lg:leading-10 xl:text-2xl ">
+          Drop Zone
+        </h3>
+        <div className="h-1/4">
+          <FileDropzone onDrop={onDrop} />
+        </div>
+        <div className="pb-5">
+          {progress !== 0 && (
+            <Box sx={{ width: "100%" }}>
+              <LinearProgress
+                variant="determinate"
+                value={progress}
+                className="bg-mainRed text-textRed"
+              />
+            </Box>
+          )}
+        </div>
+        <div className="flex justify-center gap-10">
+          <Button
+            onClick={uploadFile}
+            className="gap-1 border-textSecondary text-textSecondary hover:border-mainRed hover:bg-mainRed hover:text-white"
+            variant="outlined"
+          >
+            <CloudUploadIcon />
+            <span className="normal-case">Upload</span>
           </Button>
-        ) : (
-          <div>You didn't sign in</div>
-        )}
+        </div>
+        <h3 className="mt-2 text-base text-white sm:text-base lg:text-xl lg:leading-10 xl:w-3/4 xl:text-2xl">
+          Your Tracks
+        </h3>
+        <div className="scrollbar flex h-2/4 flex-col gap-5 overflow-y-scroll py-6">
+          {isFetched &&
+            loadedTracks!.map((item: Track, index: number) => (
+              <TrackItem
+                currentTrackId={currentTrack?.id}
+                key={item.id}
+                track={item}
+                deleteFile={deleteFile}
+                updateFile={updateFile}
+                handleTrack={setCurrentTrack}
+                index={index + 1}
+              />
+            ))}
+        </div>
       </div>
-      <div>{progress !== 0 && `Processing file:${progress} %`}</div>
-      {/* TO DO */}
-      {/* Create a <Track> component for rendering */}
-      <div className="flex flex-col flex-wrap gap-5">
-        {isFetched &&
-          loadedTracks!.map((item: any) => (
-            <div key={item.id} className=" flex flex-wrap gap-2">
-              <span
-                onClick={() => setSrc(item.url)}
-                className="w-2/6 overflow-hidden text-ellipsis whitespace-nowrap text-black"
-              >
-                {item.name}
-              </span>
-              <Button
-                className="relative m-0 w-5"
-                component="label"
-                variant="contained"
-              >
-                <CloudUploadIcon className="m-0" />
-                <input
-                  onChange={(event) => {
-                    const sellectFile =
-                      event.target.files !== null &&
-                      event.target.files !== undefined &&
-                      event.target.files[0];
-                    if (sellectFile) {
-                      updateFile(sellectFile, item.ref, item.id);
-                    }
-                  }}
-                  type="file"
-                  className="absolute bottom-0 left-0 w-full overflow-hidden opacity-0"
-                />
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={() => deleteFile(item.id, item.ref)}
-              >
-                <DeleteIcon />
-              </Button>
-            </div>
-          ))}
-      </div>
-      <audio controls src={src} />
-    </div>
+
+      {!!currentTrack && !!loadedTracks && (
+        <AudioPlayer
+          currentTrack={currentTrack}
+          playlist={loadedTracks}
+          onChangeCurrentTrack={setCurrentTrack}
+        />
+      )}
+    </main>
   );
 };
-
-// TO DO
-// input file with React-Dropzone
-
-// const baseStyle = {
-//   flex: 1,
-//   display: "flex",
-//   flexDirection: "column",
-//   alignItems: "center",
-//   padding: "20px",
-//   borderWidth: 2,
-//   borderRadius: 2,
-//   borderColor: "#eeeeee",
-//   borderStyle: "dashed",
-//   backgroundColor: "#fafafa",
-//   color: "#bdbdbd",
-//   outline: "none",
-//   transition: "border .24s ease-in-out",
-// };
-
-// const focusedStyle = {
-//   borderColor: "#2196f3",
-// };
-
-// const acceptStyle = {
-//   borderColor: "#00e676",
-// };
-
-// const rejectStyle = {
-//   borderColor: "#ff1744",
-// };
-
-// function StyledDropzone(props: any) {
-//   const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } =
-//     useDropzone({ accept: { "audio/*": [".mp3"] } });
-
-//   const style: any = useMemo(
-//     () => ({
-//       ...baseStyle,
-//       ...(isFocused ? focusedStyle : {}),
-//       ...(isDragAccept ? acceptStyle : {}),
-//       ...(isDragReject ? rejectStyle : {}),
-//     }),
-//     [isFocused, isDragAccept, isDragReject],
-//   );
-
-//   return (
-//     <div className="container">
-//       <div {...getRootProps({ style })}>
-//         <input {...getInputProps()} />
-//         <p>Drag 'n' drop some files here, or click to select files</p>
-//       </div>
-//     </div>
-//   );
-// }

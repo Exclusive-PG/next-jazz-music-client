@@ -36,17 +36,19 @@ export const trackRouter = createTRPCRouter({
         singer: z.string(),
         ref: z.string(),
         url: z.string(),
+        duration: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        const { name, singer, url, ref } = input;
+        const { name, singer, url, ref, duration } = input;
         await ctx.db.track.create({
           data: {
-            name: name,
-            ref: ref,
-            singer: singer,
-            url: url,
+            name,
+            ref,
+            singer,
+            url,
+            duration,
             userId: ctx.session.user.id,
           },
         });

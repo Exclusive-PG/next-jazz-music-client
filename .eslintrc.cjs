@@ -9,27 +9,94 @@ const config = {
     "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked",
+    "prettier",
   ],
   rules: {
-    // These opinionated rules are enabled in stylistic-type-checked above.
-    // Feel free to reconfigure them to your own preference.
+    "no-console": ["error", { allow: ["warn", "error"] }],
+    curly: ["error", "all"],
     "@typescript-eslint/array-type": "off",
-    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/consistent-type-definitions": ["error", "type"],
 
     "@typescript-eslint/consistent-type-imports": [
       "warn",
+      { prefer: "type-imports", fixStyle: "inline-type-imports" },
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
       {
-        prefer: "type-imports",
-        fixStyle: "inline-type-imports",
+        ignoreRestSiblings: true,
+        argsIgnorePattern: "^_",
+        destructuredArrayIgnorePattern: "^_",
       },
     ],
-    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     "@typescript-eslint/no-misused-promises": [
       2,
+      { checksVoidReturn: { attributes: false } },
+    ],
+    "import/no-unused-modules": [
+      "warn",
       {
-        checksVoidReturn: { attributes: false },
+        unusedExports: true,
+        ignoreExports: ["**/app/**/page.tsx", "./*.ts", "**/app/**/layout.tsx"],
       },
     ],
+    "no-restricted-imports": [
+      "error",
+      {
+        paths: [
+          {
+            name: "clsx",
+            message: "Use `import { cn } from '~/utilities/cn'` instead.",
+          },
+        ],
+      },
+    ],
+    "import/order": [
+      "error",
+      {
+        groups: [
+          "builtin",
+          "external",
+          "parent",
+          "sibling",
+          "index",
+          "object",
+          "unknown",
+        ],
+        pathGroups: [
+          {
+            pattern: "*.{jpg,png,svg}",
+            group: "object",
+            patternOptions: { matchBase: true },
+            position: "after",
+          },
+          {
+            pattern: "*.{css,scss}",
+            group: "unknown",
+            patternOptions: { matchBase: true },
+            position: "after",
+          },
+          {
+            pattern: "~/**",
+            group: "parent",
+          },
+        ],
+        "newlines-between": "always",
+        alphabetize: {
+          order: "asc",
+          caseInsensitive: true,
+        },
+      },
+    ],
+    "sort-imports": [
+      "error",
+      {
+        ignoreDeclarationSort: true,
+        ignoreCase: true,
+        allowSeparatedGroups: true,
+      },
+    ],
+    "import/newline-after-import": "error",
   },
 };
 

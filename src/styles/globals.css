@@ -7,3 +7,24 @@
   margin: 0;
   box-sizing: border-box;
 }
+
+
+@layer utilities {
+  .scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 20px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    display: none;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background: #272727;
+    border-radius: 100vh;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #3B3B3B;
+  }
+}
