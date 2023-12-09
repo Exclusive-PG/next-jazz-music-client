@@ -1,0 +1,8 @@
+node_modules/
+build/
+dist/
+yarn.lock
+*.md
+.next/
+.vercel/
+pnpm-lock.yaml

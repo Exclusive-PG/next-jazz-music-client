@@ -98,28 +98,31 @@ devDependencies:
     specifier: ^9.0.7
     version: 9.0.7
   '@typescript-eslint/eslint-plugin':
-    specifier: ^6.3.0
+    specifier: ^6.11.0
     version: 6.11.0(@typescript-eslint/parser@6.11.0)(eslint@8.53.0)(typescript@5.2.2)
   '@typescript-eslint/parser':
-    specifier: ^6.3.0
+    specifier: ^6.11.0
     version: 6.11.0(eslint@8.53.0)(typescript@5.2.2)
   autoprefixer:
     specifier: ^10.4.14
     version: 10.4.16(postcss@8.4.31)
   eslint:
-    specifier: ^8.47.0
+    specifier: ^8.53.0
     version: 8.53.0
   eslint-config-next:
-    specifier: ^14.0.0
+    specifier: ^14.0.2
     version: 14.0.2(eslint@8.53.0)(typescript@5.2.2)
+  eslint-config-prettier:
+    specifier: ^9.1.0
+    version: 9.1.0(eslint@8.53.0)
   postcss:
     specifier: ^8.4.27
     version: 8.4.31
   prettier:
-    specifier: ^3.0.0
+    specifier: ^3.1.0
     version: 3.1.0
   prettier-plugin-tailwindcss:
-    specifier: ^0.5.1
+    specifier: ^0.5.7
     version: 0.5.7(prettier@3.1.0)
   prisma:
     specifier: ^5.1.1
@@ -2298,6 +2301,15 @@ packages:
     transitivePeerDependencies:
       - eslint-import-resolver-webpack
       - supports-color
+    dev: true
+
+  /eslint-config-prettier@9.1.0(eslint@8.53.0):
+    resolution: {integrity: sha512-NSWl5BFQWEPi1j4TjVNItzYV7dZXZ+wP6I6ZhrBGpChQhZRUaElihE9uRRkcbRnNb76UMKDF3r+WTmNcGPKsqw==}
+    hasBin: true
+    peerDependencies:
+      eslint: '>=7.0.0'
+    dependencies:
+      eslint: 8.53.0
     dev: true
 
   /eslint-import-resolver-node@0.3.9:
