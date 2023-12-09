@@ -1,46 +1,28 @@
 "use client";
 
 import { Session } from "next-auth";
-import { signOut } from "next-auth/react";
 import { NextPage } from "next/types";
 import { useCallback, useEffect, useState } from "react";
 import { Box, Button, LinearProgress } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { uploadService } from "~/services/upload";
 import { api } from "~/trpc/react";
-import LogoutIcon from "@mui/icons-material/Logout";
-import { Sidebar } from "~/components/sidebar";
+import { Sidebar } from "~/components/sidebar/Sidebar";
 import { Track } from "@prisma/client";
 import { TrackItem } from "~/components/tracks/trackItem";
-import { Wrapper } from "~/components/wrapper";
 import { FileDropzone } from "~/components/ui/dropzone";
 import { AudioPlayer } from "~/components/audio-kit/audioPlayer";
-import { Utils } from "~/services/utils";
-import { redirect } from "next/navigation";
+import { Utils } from "~/utils/date-time";
 
-//MAYBE
-// const defaultTrackData: Track = {
-//   id: "11111",
-//   albumn: null,
-//   duration: 300,
-//   name: "Gimme the Night",
-//   posterUrl: null,
-//   ref: "",
-//   singer: "George Benson",
-//   url: "",
-//   userId: "",
-// };
-
-//TO DO
-//ADD FULL RESPONSIVE PAGE
-type Props = {
+//TO DO: add full responsive page
+export type PropsUploadPage = {
   session: Session | null;
 };
-export const UploadView: NextPage<Props> = ({ session }) => {
+export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   const [musicUpload, setMusicUpload] = useState<File>();
-  const onDrop = useCallback((acceptedFile: any) => {
+  const onDrop = useCallback((acceptedFile: File[]) => {
+    if (acceptedFile.length === 0) return;
     setMusicUpload(acceptedFile[0]);
-    console.log(acceptedFile);
   }, []);
 
   const [progress, setProgress] = useState<number>(0);
@@ -51,7 +33,7 @@ export const UploadView: NextPage<Props> = ({ session }) => {
   }, []);
 
   const {
-    data: loadedTracks,
+    data: loadedTracks = [],
     refetch: getTracks,
     isFetched,
   } = api.tracks.getFiles.useQuery(undefined, {
@@ -116,81 +98,62 @@ export const UploadView: NextPage<Props> = ({ session }) => {
 
   return (
     <main className="bg-darkSecondary text-white">
-      <Wrapper>
-        <div className="relative flex h-screen ">
-          <Sidebar />
-          <div className="w-full p-4 xl:w-3/4">
-            <h3 className="my-2 text-base text-white sm:text-base lg:text-xl lg:leading-10 xl:text-2xl ">
-              Drop Zone
-            </h3>
-            <div className="mx-auto h-1/4 md:w-4/5 lg:mx-auto lg:w-2/4 xl:w-2/3">
-              <FileDropzone onDrop={onDrop} />
-            </div>
-            <div className="pb-5">
-              {progress !== 0 && (
-                <Box sx={{ width: "100%" }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress}
-                    className="bg-mainRed text-textRed"
-                  />
-                </Box>
-              )}
-            </div>
-            <div className="flex justify-center gap-10">
-              <Button
-                onClick={uploadFile}
-                className="gap-1 border-textSecondary text-textSecondary hover:border-mainRed hover:bg-mainRed hover:text-white"
-                variant="outlined"
-              >
-                <CloudUploadIcon />
-                <span className="normal-case">Upload</span>
-              </Button>
-            </div>
-            <div className="absolute right-0">
-              {session ? (
-                <Button
-                  onClick={() => signOut()}
-                  startIcon={<LogoutIcon />}
-                  className="normal-case text-textSecondary"
-                >
-                  Sign Out
-                </Button>
-              ) : (
-                redirect("/login")
-              )}
-            </div>
+      <Sidebar session={session} />
 
-            <h3 className="mt-2 text-base text-white sm:text-base lg:text-xl lg:leading-10 xl:w-3/4 xl:text-2xl">
-              Your Tracks
-            </h3>
-
-            <div className="scrollbar flex h-2/4 flex-col gap-5 overflow-y-scroll py-6">
-              {isFetched &&
-                loadedTracks!.map((item: Track, index: number) => (
-                  <TrackItem
-                    currentTrackId={currentTrack?.id}
-                    key={item.id}
-                    track={item}
-                    deleteFile={deleteFile}
-                    updateFile={updateFile}
-                    handleTrack={setCurrentTrack}
-                    index={index + 1}
-                  />
-                ))}
-            </div>
-            {/* <audio controls src={src} className="absolute left-0 top-0"/> */}
-
-            {currentTrack !== undefined && loadedTracks !== undefined && (
-              <AudioPlayer
-                currentTrack={currentTrack}
-                playlist={loadedTracks}
-                onChangeCurrentTrack={setCurrentTrack}
-              />
-            )}
-          </div>
+      <div className="ml-72 h-screen max-w-full p-4">
+        <h3 className="my-2 text-base text-white sm:text-base lg:text-xl lg:leading-10 xl:text-2xl ">
+          Drop Zone
+        </h3>
+        <div className="h-1/4">
+          <FileDropzone onDrop={onDrop} />
         </div>
-      </Wrapper>
+        <div className="pb-5">
+          {progress !== 0 && (
+            <Box sx={{ width: "100%" }}>
+              <LinearProgress
+                variant="determinate"
+                value={progress}
+                className="bg-mainRed text-textRed"
+              />
+            </Box>
+          )}
+        </div>
+        <div className="flex justify-center gap-10">
+          <Button
+            onClick={uploadFile}
+            className="gap-1 border-textSecondary text-textSecondary hover:border-mainRed hover:bg-mainRed hover:text-white"
+            variant="outlined"
+          >
+            <CloudUploadIcon />
+            <span className="normal-case">Upload</span>
+          </Button>
+        </div>
+        <h3 className="mt-2 text-base text-white sm:text-base lg:text-xl lg:leading-10 xl:w-3/4 xl:text-2xl">
+          Your Tracks
+        </h3>
+        <div className="scrollbar flex h-2/4 flex-col gap-5 overflow-y-scroll py-6">
+          {isFetched &&
+            loadedTracks!.map((item: Track, index: number) => (
+              <TrackItem
+                currentTrackId={currentTrack?.id}
+                key={item.id}
+                track={item}
+                deleteFile={deleteFile}
+                updateFile={updateFile}
+                handleTrack={setCurrentTrack}
+                index={index + 1}
+              />
+            ))}
+        </div>
+      </div>
+
+      {!!currentTrack && !!loadedTracks && (
+        <AudioPlayer
+          currentTrack={currentTrack}
+          playlist={loadedTracks}
+          onChangeCurrentTrack={setCurrentTrack}
+        />
+      )}
     </main>
   );
 };

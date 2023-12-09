@@ -1,32 +1,16 @@
 import { useMemo } from "react";
 import { useDropzone } from "react-dropzone";
+import {
+  baseStyle,
+  focusedStyle,
+  acceptStyle,
+  rejectStyle,
+ } from "./themeDropzone";
 
-const baseStyle = {
-  alignItems: "center",
-  padding: "20px",
-  borderWidth: 2,
-  borderRadius: 2,
-  borderColor: "#eeeeee",
-  borderStyle: "dashed",
-  backgroundColor: "#fafafa",
-  outline: "none",
-  transition: "border .24s ease-in-out",
-};
 
-const focusedStyle = {
-  borderColor: "#2196f3",
-};
-
-const acceptStyle = {
-  borderColor: "#00e676",
-};
-
-const rejectStyle = {
-  borderColor: "#ff1744",
-};
 
 type Props = {
-  onDrop:(file:any) => any
+  onDrop: (file: File[]) => void;
 };
 export const FileDropzone: React.FC<Props> = ({onDrop}) => {
   const {
@@ -36,14 +20,14 @@ export const FileDropzone: React.FC<Props> = ({onDrop}) => {
     isDragAccept,
     isDragReject,
     acceptedFiles,
-  } = useDropzone({ accept: { "audio/*": [".mp3"] },maxFiles:1,onDrop });
+  } = useDropzone({ accept: { "audio/mpeg": [".mp3"] },maxFiles:1,onDrop });
 
      const files = acceptedFiles.map((file) => (
        <li key={file.name}>
          {file.name} - {(file.size/1024/1024).toFixed(2)} mb
        </li>
      ));
-  const style: any = useMemo(
+  const style = useMemo(
     () => ({
       ...baseStyle,
       ...(isFocused ? focusedStyle : {}),

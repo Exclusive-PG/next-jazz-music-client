@@ -16,8 +16,6 @@
   }
 
   .scrollbar::-webkit-scrollbar-track {
-    /* border-radius: 100vh;
-    background: #f7f4ed; */
     display: none;
   }
 
