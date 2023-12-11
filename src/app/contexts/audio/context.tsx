@@ -1,8 +1,10 @@
 "use client";
-import { Track } from "@prisma/client";
+import { type Track } from "@prisma/client";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+
 import AudioPlayer from "~/components/audio-kit/audioPlayer";
+
 import { AudioContext, defaultTrackData } from "./init";
 
 type Props = React.PropsWithChildren;

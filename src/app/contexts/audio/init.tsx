@@ -1,5 +1,5 @@
 "use client";
-import { Track } from "@prisma/client";
+import { type Track } from "@prisma/client";
 import { createContext } from "react";
 
 export const defaultTrackData: Track = {

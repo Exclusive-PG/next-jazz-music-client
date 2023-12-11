@@ -8,13 +8,13 @@ import { type Session } from "next-auth";
 import { useCallback, useEffect, useState } from "react";
 
 //import { AudioPlayer } from "~/components/audio-kit/audioPlayer";
+import { useAudioContext } from "~/app/contexts/audio/provider";
 import { Sidebar } from "~/components/sidebar/Sidebar";
 import { TrackItem } from "~/components/tracks/trackItem";
 import { FileDropzone } from "~/components/ui/dropzone";
 import { uploadService } from "~/services/upload";
 import { api } from "~/trpc/react";
 import { UtilsDate } from "~/utils/date-time";
-import { useAudioContext } from "~/app/contexts/audio/provider";
 
 //TO DO: add full responsive page
 export type PropsUploadPage = {
@@ -22,7 +22,8 @@ export type PropsUploadPage = {
 };
 export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   const [musicUpload, setMusicUpload] = useState<File>();
-  const { currentTrack, playlist, setCurrentTrack, setPlaylist } = useAudioContext();
+  const { currentTrack, playlist, setCurrentTrack, setPlaylist } =
+    useAudioContext();
 
   const onDrop = useCallback((acceptedFile: File[]) => {
     if (acceptedFile.length === 0) {
@@ -106,7 +107,7 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
     setProgress(0);
   }
 
-  if(isFetched){
+  if (isFetched) {
     setPlaylist(loadedTracks);
   }
   return (

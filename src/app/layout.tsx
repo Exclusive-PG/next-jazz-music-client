@@ -3,10 +3,10 @@ import { ThemeProvider } from "@mui/material";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 
+import { AudioProvider } from "~/app/contexts/audio/context";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import { theme } from "./theme";
-import { AudioProvider } from "~/app/contexts/audio/context";
 
 const inter = Inter({
   subsets: ["latin"],
