@@ -1,24 +1,28 @@
 "use client";
 
-import { useForm, type SubmitHandler } from "react-hook-form";
-import { ClientSafeProvider, LiteralUnion, signIn } from "next-auth/react";
-import { type AppProps } from "next/app";
-import { LoginSchema } from "~/domains/auth/validAuth";
 import { Button } from "@mui/material";
-import { NextPage } from "next/types";
 import Image from "next/image";
-import { Session } from "next-auth";
-import { redirect } from "next/navigation";
-import { BuiltInProviderType } from "next-auth/providers";
+import { type NextPage } from "next/types";
+import { type Session } from "next-auth";
+import { type BuiltInProviderType } from "next-auth/providers";
+import {
+  type ClientSafeProvider,
+  type LiteralUnion,
+  signIn,
+} from "next-auth/react";
+import { type SubmitHandler, useForm } from "react-hook-form";
+
+import { type LoginSchema } from "~/domains/auth/validAuth";
+
 type Props = {
   providers: Record<
     LiteralUnion<BuiltInProviderType, string>,
     ClientSafeProvider
-  > | null ;
+  > | null;
   session: Session | null;
 };
 
-export const LoginForm: NextPage<Props> = ({ providers, session }) => {
+export const LoginForm: NextPage<Props> = ({ providers }) => {
   const {
     register,
     handleSubmit,
@@ -56,30 +60,30 @@ export const LoginForm: NextPage<Props> = ({ providers, session }) => {
         </Button>
       </form>
       <div className="flex items-center justify-center pt-4">
-        
-        {providers !== null && Object.values(providers)?.map(
-          (item: any) =>
-            item.id !== "credentials" && (
-              <div className="justify-content ml-3 flex" key={item.id}>
-                <Button
-                  color="primary"
-                  variant="outlined"
-                  aria-label="outlined primary button group"
-                  onClick={async () =>
-                    await signIn(item.id, { callbackUrl: "/dashboard" })
-                  }
-                >
-                  <Image
-                    alt={item.id}
-                    src={`https://authjs.dev/img/providers/${item.id}.svg`}
-                    height={50}
-                    width={50}
-                  />
-                  <span className="pl-2">{item.id}</span>
-                </Button>
-              </div>
-            ),
-        )}
+        {providers !== null &&
+          Object.values(providers)?.map(
+            (item: any) =>
+              item.id !== "credentials" && (
+                <div className="justify-content ml-3 flex" key={item.id}>
+                  <Button
+                    color="primary"
+                    variant="outlined"
+                    aria-label="outlined primary button group"
+                    onClick={async () =>
+                      await signIn(item.id, { callbackUrl: "/dashboard" })
+                    }
+                  >
+                    <Image
+                      alt={item.id}
+                      src={`https://authjs.dev/img/providers/${item.id}.svg`}
+                      height={50}
+                      width={50}
+                    />
+                    <span className="pl-2">{item.id}</span>
+                  </Button>
+                </div>
+              ),
+          )}
       </div>
     </div>
   );

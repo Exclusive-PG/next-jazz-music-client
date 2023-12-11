@@ -1,17 +1,15 @@
 "use client";
+import AudiotrackIcon from "@mui/icons-material/Audiotrack";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { Button } from "@mui/material";
 import Link from "next/link";
 
-import { Button} from "@mui/material";
-import AudiotrackIcon from "@mui/icons-material/Audiotrack";
-import { PropsUploadPage } from "~/app/upload/view";
-import LogoutIcon from "@mui/icons-material/Logout";
-import { NavItem } from "./NavItem";
+import { type PropsUploadPage } from "~/app/upload/view";
 import { navList } from "~/constants";
 
-
+import { NavItem } from "./NavItem";
 
 export const Sidebar: React.FC<PropsUploadPage> = ({ session }) => {
-
   return (
     <aside className="fixed left-0 top-0 h-full w-72 bg-darkPrimary px-5 py-8 text-white">
       <div className="relative h-full w-full">
@@ -43,4 +41,3 @@ export const Sidebar: React.FC<PropsUploadPage> = ({ session }) => {
     </aside>
   );
 };
-

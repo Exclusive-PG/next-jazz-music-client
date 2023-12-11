@@ -1,11 +1,13 @@
 "use client";
 
-import { useForm, type SubmitHandler } from "react-hook-form";
-import { signIn } from "next-auth/react";
-import { type AppProps } from "next/app";
-import { LoginSchema } from "~/domains/auth/validAuth";
 import { Button } from "@mui/material";
-import { NextPage } from "next/types";
+import { type AppProps } from "next/app";
+import { type NextPage } from "next/types";
+import { signIn } from "next-auth/react";
+import { type SubmitHandler, useForm } from "react-hook-form";
+
+import { type LoginSchema } from "~/domains/auth/validAuth";
+
 import { api } from "./../../trpc/react";
 
 type Props = {};
@@ -18,7 +20,7 @@ export const SignUpForm: NextPage<Props> = (props) => {
   } = useForm<LoginSchema>();
 
   const registerUser = api.user.registerUser.useMutation();
-  
+
   const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
     try {
       registerUser.mutateAsync({ ...data });

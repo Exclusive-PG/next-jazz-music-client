@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PropsNavList } from "~/constants";
+
+import { type PropsNavList } from "~/constants";
 
 export const NavItem: React.FC<PropsNavList> = ({ title, icon, link }) => {
   const currentRoute = usePathname();

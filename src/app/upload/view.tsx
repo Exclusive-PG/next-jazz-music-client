@@ -1,18 +1,20 @@
 "use client";
 
-import { Session } from "next-auth";
-import { NextPage } from "next/types";
-import { useCallback, useEffect, useState } from "react";
-import { Box, Button, LinearProgress } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { uploadService } from "~/services/upload";
-import { api } from "~/trpc/react";
+import { Box, Button, LinearProgress } from "@mui/material";
+import { type Track } from "@prisma/client";
+import { type NextPage } from "next/types";
+import { type Session } from "next-auth";
+import { useCallback, useEffect, useState } from "react";
+
+//import { AudioPlayer } from "~/components/audio-kit/audioPlayer";
 import { Sidebar } from "~/components/sidebar/Sidebar";
-import { Track } from "@prisma/client";
 import { TrackItem } from "~/components/tracks/trackItem";
 import { FileDropzone } from "~/components/ui/dropzone";
-import { AudioPlayer } from "~/components/audio-kit/audioPlayer";
-import { Utils } from "~/utils/date-time";
+import { uploadService } from "~/services/upload";
+import { api } from "~/trpc/react";
+import { UtilsDate } from "~/utils/date-time";
+import { useAudioContext } from "~/app/contexts/audio/provider";
 
 //TO DO: add full responsive page
 export type PropsUploadPage = {
@@ -20,13 +22,15 @@ export type PropsUploadPage = {
 };
 export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   const [musicUpload, setMusicUpload] = useState<File>();
+  const { currentTrack, playlist, setCurrentTrack, setPlaylist } = useAudioContext();
+
   const onDrop = useCallback((acceptedFile: File[]) => {
-    if (acceptedFile.length === 0) return;
+    if (acceptedFile.length === 0) {
+      return;
+    }
     setMusicUpload(acceptedFile[0]);
   }, []);
-
   const [progress, setProgress] = useState<number>(0);
-  const [currentTrack, setCurrentTrack] = useState<Track>();
   const queryUtils = api.useUtils();
   useEffect(() => {
     getTracks();
@@ -64,9 +68,11 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
       setProgress,
     );
 
-    if (!uploadAction.status) return;
+    if (!uploadAction.status) {
+      return;
+    }
 
-    const duration: number = await Utils.getDuration(uploadAction.url!);
+    const duration: number = await UtilsDate.getDuration(uploadAction.url!);
 
     await uploadTracks.mutateAsync({
       singer: "Unknown",
@@ -80,7 +86,9 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   }
   async function deleteFile(trackId: string, trackRef: string) {
     const deleteAction = await uploadService.deleteFile(trackRef);
-    if (!deleteAction.status) return;
+    if (!deleteAction.status) {
+      return;
+    }
     await deleteTracks.mutateAsync({ trackId });
     getTracks();
   }
@@ -90,12 +98,17 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
       file,
       setProgress,
     );
-    if (!updateAction.status) return;
+    if (!updateAction.status) {
+      return;
+    }
     await updateTracks.mutateAsync({ trackId, url: updateAction.url! });
     getTracks();
     setProgress(0);
   }
 
+  if(isFetched){
+    setPlaylist(loadedTracks);
+  }
   return (
     <main className="bg-darkSecondary text-white">
       <Sidebar session={session} />
@@ -133,7 +146,7 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
         </h3>
         <div className="scrollbar flex h-2/4 flex-col gap-5 overflow-y-scroll py-6">
           {isFetched &&
-            loadedTracks!.map((item: Track, index: number) => (
+            loadedTracks.map((item: Track, index: number) => (
               <TrackItem
                 currentTrackId={currentTrack?.id}
                 key={item.id}
@@ -146,14 +159,6 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
             ))}
         </div>
       </div>
-
-      {!!currentTrack && !!loadedTracks && (
-        <AudioPlayer
-          currentTrack={currentTrack}
-          playlist={loadedTracks}
-          onChangeCurrentTrack={setCurrentTrack}
-        />
-      )}
     </main>
   );
 };

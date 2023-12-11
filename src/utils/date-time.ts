@@ -1,26 +1,17 @@
-export class Utils {
-  private static leadingZeroFormatter: Intl.NumberFormat =
-    new Intl.NumberFormat(undefined, {
-      minimumIntegerDigits: 2,
-    });
+import { addSeconds, format } from "date-fns";
 
-  public static normalizeDuration(time: number) {
-    const seconds = Math.floor(time % 60);
-    const minutes = Math.floor(time / 60) % 60;
-    const hour = Math.floor(time / 3600);
-    if (isNaN(seconds)) return `00:00`;
-
-    if (hour === 0) {
-      return `${minutes}:${this.leadingZeroFormatter.format(seconds)}`;
-    } else {
-      return `${hour}:${this.leadingZeroFormatter.format(
-        minutes,
-      )}:${this.leadingZeroFormatter.format(seconds)}`;
+export class UtilsDate {
+  public static normalizeDuration(seconds: number) {
+    try {
+      let helperDate = addSeconds(new Date(0), seconds);
+      return format(helperDate, "mm:ss");
+    } catch (e) {
+      console.log((e as Error).message);
     }
   }
   public static async getDuration(src: string): Promise<number> {
     return await new Promise(function (resolve) {
-      let audio = new Audio(src);
+      const audio = new Audio(src);
       audio.addEventListener("loadedmetadata", function () {
         resolve(audio.duration);
       });

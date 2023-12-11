@@ -1,9 +1,10 @@
-import { Button } from "@mui/material";
-import { Track } from "@prisma/client";
-import DeleteIcon from "@mui/icons-material/Delete";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Button } from "@mui/material";
+import { type Track } from "@prisma/client";
 import Image from "next/image";
-import { Utils } from "~/utils/date-time";
+
+import { UtilsDate } from "~/utils/date-time";
 
 type Props = {
   track: Track;
@@ -57,8 +58,8 @@ export const TrackItem: React.FC<Props> = ({
       >
         {name}
       </span>
-      <span className="max-md:hidden px-10">{singer}</span>
-      <span className="pl-10">{Utils.normalizeDuration(duration)}</span>
+      <span className="px-10 max-md:hidden">{singer}</span>
+      <span className="pl-10">{UtilsDate.normalizeDuration(duration)}</span>
       <Button className="relative m-0 w-5 text-textSecondary hover:text-textRed">
         <CloudUploadIcon className="m-0 hover:text-textRed" />
         <input

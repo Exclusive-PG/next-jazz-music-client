@@ -1,6 +1,6 @@
-import HouseIcon from "@mui/icons-material/House";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { SvgIconOwnProps } from "@mui/material";
+import HouseIcon from "@mui/icons-material/House";
+import { type SvgIconOwnProps } from "@mui/material";
 
 export type PropsNavList = {
   id: number;

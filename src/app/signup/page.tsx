@@ -1,8 +1,6 @@
-import { Wrapper } from "../../components/wrapper";
+
 import React from "react";
-import { LoginForm } from "~/app/login/loginForm";
-import { NextPage } from "next/types";
-import { getProviders } from "next-auth/react";
+import { Wrapper } from "../../components/wrapper";
 import { SignUpForm } from "./signupForm";
 
 const SignUpPage = async (): Promise<React.JSX.Element> => {

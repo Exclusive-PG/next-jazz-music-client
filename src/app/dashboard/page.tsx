@@ -1,7 +1,9 @@
 import { getProviders } from "next-auth/react";
-import { getServerAuthSession } from "~/server/auth";
-import { DashView } from "./view";
+
 import { Wrapper } from "~/components/wrapper";
+import { getServerAuthSession } from "~/server/auth";
+
+import { DashView } from "./view";
 
 const DashBoard = async (): Promise<React.JSX.Element> => {
   const session = await getServerAuthSession();

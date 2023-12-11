@@ -1,9 +1,8 @@
 "use client";
 import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
+
 import { env } from "~/env.mjs";
-
-
 
 const firebaseConfig = {
   apiKey: env.NEXT_PUBLIC_FB_apiKey,

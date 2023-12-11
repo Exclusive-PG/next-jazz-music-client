@@ -1,15 +1,16 @@
-import { storage } from "~/firebase/init";
-import { v4 as uuidv4 } from "uuid";
 import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  FirebaseStorage,
-  listAll,
-  StorageReference,
-  uploadBytesResumable,
   deleteObject,
+  FirebaseStorage,
+  getDownloadURL,
+  listAll,
+  ref,
+  type StorageReference,
+  uploadBytes,
+  uploadBytesResumable,
 } from "firebase/storage";
+import { v4 as uuidv4 } from "uuid";
+
+import { storage } from "~/firebase/init";
 
 type PromiseData = {
   status: boolean;
@@ -33,10 +34,12 @@ class UploadService {
     file: File,
     setProgress?: (percents: number) => void,
   ): Promise<PromiseData> {
-    if (!file) return Promise.resolve({ status: false });
+    if (!file) {
+      return Promise.resolve({ status: false });
+    }
 
     const subMusicRef = `${userId}/${uuidv4()}`;
-  
+
     const fullMusicRef = ref(storage, `${this.folderPath}${subMusicRef}`);
     const uploadTask = uploadBytesResumable(fullMusicRef, file);
     uploadTask.on(
@@ -75,15 +78,17 @@ class UploadService {
     file: File,
     setProgress?: (percents: number) => void,
   ): Promise<PromiseData> {
-    if (!file)
+    if (!file) {
       return Promise.reject({ status: false, reason: "File Not Found!" });
+    }
 
     const updateRef = ref(storage, `${this.folderPath}${filePath}`);
 
     const fileIsExists = (await this.checkIfFileExists(updateRef)).status;
 
-    if (!fileIsExists)
+    if (!fileIsExists) {
       return Promise.reject({ status: false, reason: "File Doesn't Exists!" });
+    }
     const uploadTask = uploadBytesResumable(updateRef, file);
     uploadTask.on(
       "state_changed",

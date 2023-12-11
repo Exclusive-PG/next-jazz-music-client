@@ -1,101 +1,67 @@
 "use client";
-import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
-import Image from "next/image";
-import { Button, Box, Slider, Stack } from "@mui/material";
+import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import VolumeUp from "@mui/icons-material/VolumeUp";
-import { Track } from "@prisma/client";
-import { useEffect, useRef, useState } from "react";
-import { Utils } from "~/utils/date-time";
+import { Box, Button, Slider, Stack } from "@mui/material";
+import { type Track } from "@prisma/client";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useAudio } from "~/hooks/useAudio";
+import { UtilsDate } from "~/utils/date-time";
 
-type AudioParam = {
-  src: string;
-  options: {
-    volume?: number;
-    playbackRate?: number;
-  };
-};
-type Props = {
+type PropsAudioPlayer = {
   onChangeCurrentTrack: (track: Track) => void;
   currentTrack: Track;
   playlist: Array<Track>;
 };
 
-const useAudio = ({ src, options }: AudioParam) => {
-  const { volume, playbackRate } = options;
-  const DEFAULT_VOLUME = 0.8;
-  const DEFAULT_PLAYBACKRATE = 1;
-  const [audio,setAudio] = useState(new Audio(src));
-  return audio;
-};
-
-export const AudioPlayer: React.FC<Props> = ({
+ const AudioPlayer: React.FC<PropsAudioPlayer> = ({
   currentTrack,
   playlist,
   onChangeCurrentTrack,
 }) => {
   const { name, singer, duration, url } = currentTrack;
-  const audio = useAudio({ src: url, options: {} });
-  const [playing, setPlaying] = useState(true);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [
+    audio,
+    playing,
+    currentTime,
+    togglePlay,
+    changeVolume,
+    changeCurrentTime,
+    setSourceAndPlay,
+  ] = useAudio(url);
 
   useEffect(() => {
-    audio.addEventListener("timeupdate", () => {
-      const percent = audio.currentTime / audio.duration;
-      setCurrentTime(audio.currentTime);
-    });
-  }, []);
-
-  useEffect(() => {
-    setTimeout(() => {
-      audio.src = url;
-      audio.play();
-      setPlaying(!audio.paused);
-    }, 1);
-
+    setSourceAndPlay(duration, url);
     audio.addEventListener("ended", () => {
       nextTrack();
     });
   }, [currentTrack]);
 
   const nextTrack = () => {
-    if (!playlist && !currentTrack) return;
+    if (!playlist && !currentTrack) {
+      return;
+    }
     let index = playlist.findIndex((item) => item.id === currentTrack.id);
     ++index;
-    let currentIndexTrack = index === playlist.length ? (index = 0) : index;
+    const currentIndexTrack = index === playlist.length ? (index = 0) : index;
     audio.src = playlist[currentIndexTrack]!.url;
     onChangeCurrentTrack?.(playlist[currentIndexTrack]!);
   };
   const prevTrack = () => {
-    if (!playlist && !currentTrack) return;
+    if (!playlist && !currentTrack) {
+      return;
+    }
     let index = playlist.findIndex((item) => item.id === currentTrack.id);
     index--;
-    let currentIndexTrack = index < 0 ? playlist.length - 1 : index;
+    const currentIndexTrack = index < 0 ? playlist.length - 1 : index;
     audio.src = playlist[currentIndexTrack]!.url;
     onChangeCurrentTrack?.(playlist[currentIndexTrack]!);
   };
 
-  const toggle = () => {
-    audio.paused ? audio.play() : audio.pause();
-    setPlaying(!audio.paused);
-  };
 
-  const changeVolume = (event: Event, newValue: number | number[]) => {
-    const DEFAULT_LOW_VOLUME = 0;
-    const DEFAULT_HIGH_VOLUME = 1;
-    if (newValue < DEFAULT_LOW_VOLUME || newValue > DEFAULT_HIGH_VOLUME) return;
-    const value: number = Array.isArray(newValue) ? newValue[0]! : newValue;
-    audio.volume = value;
-  };
-  
-  const changeCurrentTime = (event: Event, newValue: number | number[]) => {
-    if (newValue < 0 || newValue > duration) return;
-    const value: number = Array.isArray(newValue) ? newValue[0]! : newValue;
-    setCurrentTime(value);
-    audio.currentTime = value;
-  };
   return (
     <div className="fixed bottom-0 left-0  h-20 w-full bg-darkPrimary">
       <div className="flex items-center p-3">
@@ -104,7 +70,10 @@ export const AudioPlayer: React.FC<Props> = ({
             <SkipPreviousIcon className=" text-5xl" />
           </Button>
 
-          <Button className="text-white hover:text-mainRed" onClick={toggle}>
+          <Button
+            className="text-white hover:text-mainRed"
+            onClick={togglePlay}
+          >
             {playing ? (
               <PauseCircleIcon className="text-5xl hover:text-mainRed" />
             ) : (
@@ -131,7 +100,9 @@ export const AudioPlayer: React.FC<Props> = ({
             {name} ● {singer}
           </div>
           <div className="flex items-center gap-5">
-            <span className="w-10">{Utils.normalizeDuration(currentTime)}</span>
+            <span className="w-10">
+              {UtilsDate.normalizeDuration(currentTime)}
+            </span>
             <Box sx={{ width: 600 }} className="">
               <Slider
                 defaultValue={50}
@@ -140,12 +111,14 @@ export const AudioPlayer: React.FC<Props> = ({
                 value={currentTime}
                 aria-label="progress-song"
                 valueLabelDisplay="auto"
-                valueLabelFormat={Utils.normalizeDuration(currentTime)}
+                valueLabelFormat={UtilsDate.normalizeDuration(currentTime)}
                 className="text-mainRed"
                 onChange={changeCurrentTime}
               />
             </Box>
-            <span className="w-10">{Utils.normalizeDuration(duration)}</span>
+            <span className="w-10">
+              {UtilsDate.normalizeDuration(duration)}
+            </span>
           </div>
         </div>
         <div className="flex items-center pl-20">
@@ -172,3 +145,4 @@ export const AudioPlayer: React.FC<Props> = ({
     </div>
   );
 };
+export default AudioPlayer;

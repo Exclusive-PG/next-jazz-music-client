@@ -1,26 +1,27 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import bcrypt from "bcrypt";
 import {
-  getServerSession,
   type DefaultSession,
+  getServerSession,
   type NextAuthOptions,
 } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GithubProvider from "next-auth/providers/github";
 import DiscordProvider from "next-auth/providers/discord";
+import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+
+import { loginSchema } from "~/domains/auth/validAuth";
 import { env } from "~/env.mjs";
 import { db } from "~/server/db";
-import { loginSchema } from "~/domains/auth/validAuth";
-import bcrypt from "bcrypt";
 
 declare module "next-auth" {
-  interface Session extends DefaultSession {
+  type Session = {
     user: {
       id: string;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
-  }
+  } & DefaultSession;
 
   // interface User {
   //   // ...other properties
@@ -85,7 +86,9 @@ export const authOptions: NextAuthOptions = {
         const cred = await loginSchema.parseAsync(credentials);
         const user = await db.user.findFirst({ where: { email: cred.email } });
 
-        if (!user) return null;
+        if (!user) {
+          return null;
+        }
 
         const isValidPassword = bcrypt.compareSync(
           cred.password,
