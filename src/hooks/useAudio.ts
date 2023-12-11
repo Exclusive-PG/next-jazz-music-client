@@ -1,65 +1,104 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export const useAudio = (src: string) => {
-
+export const useAudio = (initialSrc?: string) => {
   const DEFAULT_VOLUME = 0.8;
-  const DEFAULT_PLAYBACKRATE = 1;
-  const [audio, setAudio] = useState<HTMLAudioElement>(new Audio(src));
+  const DEFAULT_PLAYBACK_RATE = 1;
+
+  const [src, setSrc] = useState(initialSrc);
+  const [audio, setAudio] = useState<HTMLAudioElement>();
   const [currentTime, setCurrentTime] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [duration, setDuration] = useState(0);
-  const [isServer, setIsServer] = useState<boolean>(true);
 
-  useEffect(() => {
-    setIsServer(false);
-  }, []);
-
-  useEffect(() => {
+  const createNewAudio = (src: string) => {
+    const audio = new Audio(src);
     audio.volume = DEFAULT_VOLUME;
-    audio.playbackRate = DEFAULT_PLAYBACKRATE;
-    audio.addEventListener("timeupdate", () => {
-      const percent = audio.currentTime / audio.duration;
+    audio.playbackRate = DEFAULT_PLAYBACK_RATE;
+
+    audio?.play();
+
+    return audio;
+  };
+
+  const subscribeToAudioEvents = (audio: HTMLAudioElement) => {
+    const onTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
+    };
+    audio.addEventListener("timeupdate", onTimeUpdate);
+
+    return () => {
+      audio?.removeEventListener("timeupdate", onTimeUpdate);
+    };
+  };
+
+  useEffect(() => {
+    if (!src) {
+      return;
+    }
+
+    setAudio((prevAudio) => {
+      if (!prevAudio) {
+        return createNewAudio(src);
+      }
+
+      prevAudio.src = src;
+      return prevAudio;
     });
-  }, []);
+  }, [src]);
+
+  useEffect(() => {
+    if (!audio) {
+      return;
+    }
+
+    const unsubscribe = subscribeToAudioEvents(audio);
+    return unsubscribe;
+  }, [audio]);
 
   const togglePlay = () => {
+    if (!audio) {
+      return;
+    }
+
     audio.paused ? audio.play() : audio.pause();
     setPlaying(!audio.paused);
   };
 
-  const changeVolume = (event: Event, newValue: number | number[]): void => {
-    const DEFAULT_LOW_VOLUME = 0;
-    const DEFAULT_HIGH_VOLUME = 1;
-    if (newValue < DEFAULT_LOW_VOLUME || newValue > DEFAULT_HIGH_VOLUME) {
+  const changeVolume = (newValue: number): void => {
+    if (!audio) {
       return;
     }
-    const value: number = Array.isArray(newValue) ? newValue[0]! : newValue;
+
+    const MIN_VOLUME = 0;
+    const MAX_VOLUME = 1;
+
+    const value = Math.min(Math.max(newValue, MIN_VOLUME), MAX_VOLUME);
     audio.volume = value;
   };
 
-  const changeCurrentTime = (event: Event, newValue: number | number[]) => {
-    if (newValue < 0 || newValue > duration) return;
+  const changeCurrentTime = (newValue: number) => {
+    if (!audio) {
+      return;
+    }
 
-    const value: number = Array.isArray(newValue) ? newValue[0]! : newValue;
-    setCurrentTime(value);
+    const value = Math.min(Math.max(newValue, 0), audio.duration);
+
     audio.currentTime = value;
+    setCurrentTime(value);
   };
-  const setSourceAndPlay = (duration: number, url: string) => {
-    setDuration(duration);
-    audio.src = url;
-    audio.play();
-    setPlaying(!audio.paused);
+
+  const updateAudioSrc = (src: string) => {
+    setSrc(src);
   };
-  return [
+
+  return {
     audio,
     playing,
     currentTime,
     togglePlay,
     changeVolume,
     changeCurrentTime,
-    setSourceAndPlay,
-  ] as const;
+    updateAudioSrc,
+  } as const;
 };

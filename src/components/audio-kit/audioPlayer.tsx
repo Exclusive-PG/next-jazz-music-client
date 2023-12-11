@@ -1,66 +1,103 @@
 "use client";
+
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import VolumeUp from "@mui/icons-material/VolumeUp";
-import { Box, Button, Slider, Stack } from "@mui/material";
+import { Box, Button, Slider, type SliderOwnProps, Stack } from "@mui/material";
 import { type Track } from "@prisma/client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
+
 import { useAudio } from "~/hooks/useAudio";
 import { UtilsDate } from "~/utils/date-time";
 
-type PropsAudioPlayer = {
+type Props = {
   onChangeCurrentTrack: (track: Track) => void;
   currentTrack: Track;
   playlist: Array<Track>;
 };
 
- const AudioPlayer: React.FC<PropsAudioPlayer> = ({
+const AudioPlayer: React.FC<Props> = ({
   currentTrack,
   playlist,
   onChangeCurrentTrack,
 }) => {
   const { name, singer, duration, url } = currentTrack;
-  const [
+
+  const {
     audio,
     playing,
     currentTime,
     togglePlay,
     changeVolume,
     changeCurrentTime,
-    setSourceAndPlay,
-  ] = useAudio(url);
+    updateAudioSrc,
+  } = useAudio(url);
+
+  const nextTrack = useCallback(() => {
+    if (!playlist?.length && !currentTrack) {
+      return;
+    }
+
+    let index = playlist.findIndex((item) => item.id === currentTrack.id) + 1;
+    if (index === playlist.length) {
+      index = 0;
+    }
+
+    updateAudioSrc(playlist[index]!.url);
+    onChangeCurrentTrack?.(playlist[index]!);
+  }, [currentTrack, onChangeCurrentTrack, playlist, updateAudioSrc]);
+
+  const prevTrack = useCallback(() => {
+    if (!playlist?.length && !currentTrack) {
+      return;
+    }
+
+    let index = playlist.findIndex((item) => item.id === currentTrack.id) - 1;
+    if (index < 0) {
+      index = playlist.length - 1;
+    }
+
+    updateAudioSrc(playlist[index]!.url);
+    onChangeCurrentTrack?.(playlist[index]!);
+  }, [currentTrack, onChangeCurrentTrack, playlist, updateAudioSrc]);
 
   useEffect(() => {
-    setSourceAndPlay(duration, url);
-    audio.addEventListener("ended", () => {
-      nextTrack();
-    });
-  }, [currentTrack]);
-
-  const nextTrack = () => {
-    if (!playlist && !currentTrack) {
+    if (!audio) {
       return;
     }
-    let index = playlist.findIndex((item) => item.id === currentTrack.id);
-    ++index;
-    const currentIndexTrack = index === playlist.length ? (index = 0) : index;
-    audio.src = playlist[currentIndexTrack]!.url;
-    onChangeCurrentTrack?.(playlist[currentIndexTrack]!);
-  };
-  const prevTrack = () => {
-    if (!playlist && !currentTrack) {
+
+    audio.addEventListener("ended", nextTrack);
+    return () => {
+      audio.removeEventListener("ended", nextTrack);
+    };
+  }, [audio, nextTrack]);
+
+  const onAudioTimeChange: SliderOwnProps["onChangeCommitted"] = (
+    event,
+    value,
+  ) => {
+    const newValue = Array.isArray(value) ? value[0] : value;
+    if (newValue === undefined) {
       return;
     }
-    let index = playlist.findIndex((item) => item.id === currentTrack.id);
-    index--;
-    const currentIndexTrack = index < 0 ? playlist.length - 1 : index;
-    audio.src = playlist[currentIndexTrack]!.url;
-    onChangeCurrentTrack?.(playlist[currentIndexTrack]!);
+
+    changeCurrentTime(newValue);
   };
 
+  const onAudioVolumeChange: SliderOwnProps["onChangeCommitted"] = (
+    event,
+    value,
+  ) => {
+    const newValue = Array.isArray(value) ? value[0] : value;
+    if (newValue === undefined) {
+      return;
+    }
+
+    changeVolume(newValue);
+  };
 
   return (
     <div className="fixed bottom-0 left-0  h-20 w-full bg-darkPrimary">
@@ -113,7 +150,7 @@ type PropsAudioPlayer = {
                 valueLabelDisplay="auto"
                 valueLabelFormat={UtilsDate.normalizeDuration(currentTime)}
                 className="text-mainRed"
-                onChange={changeCurrentTime}
+                onChangeCommitted={onAudioTimeChange}
               />
             </Box>
             <span className="w-10">
@@ -136,7 +173,7 @@ type PropsAudioPlayer = {
                 min={0}
                 max={1}
                 step={0.01}
-                onChange={changeVolume}
+                onChangeCommitted={onAudioVolumeChange}
               />
             </Stack>
           </Box>

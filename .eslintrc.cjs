@@ -97,6 +97,8 @@ const config = {
       },
     ],
     "import/newline-after-import": "error",
+
+    "@typescript-eslint/no-floating-promises": "off",
   },
 };
 
