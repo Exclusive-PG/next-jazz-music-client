@@ -1,4 +1,3 @@
-import { useAudioContext } from "~/app/contexts/audio/provider";
 import { getServerAuthSession } from "~/server/auth";
 
 import { UploadView } from "./view";

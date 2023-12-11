@@ -3,7 +3,7 @@ import { ThemeProvider } from "@mui/material";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 
-import { AudioProvider } from "~/app/contexts/audio/context";
+import { AudioProvider } from "~/app/contexts/audio/provider";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import { theme } from "./theme";
