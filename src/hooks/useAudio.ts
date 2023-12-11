@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const useAudio = (initialSrc?: string) => {
   const DEFAULT_VOLUME = 0.8;
@@ -10,16 +10,6 @@ export const useAudio = (initialSrc?: string) => {
   const [audio, setAudio] = useState<HTMLAudioElement>();
   const [currentTime, setCurrentTime] = useState(0);
   const [playing, setPlaying] = useState(true);
-
-  const createNewAudio = (src: string) => {
-    const audio = new Audio(src);
-    audio.volume = DEFAULT_VOLUME;
-    audio.playbackRate = DEFAULT_PLAYBACK_RATE;
-
-    audio?.play();
-
-    return audio;
-  };
 
   const subscribeToAudioEvents = (audio: HTMLAudioElement) => {
     const onTimeUpdate = () => {
@@ -33,19 +23,16 @@ export const useAudio = (initialSrc?: string) => {
   };
 
   useEffect(() => {
-    if (!src) {
-      return;
-    }
+    const audio = new Audio();
+    audio.volume = DEFAULT_VOLUME;
+    audio.playbackRate = DEFAULT_PLAYBACK_RATE;
 
-    setAudio((prevAudio) => {
-      if (!prevAudio) {
-        return createNewAudio(src);
-      }
+    setAudio(audio);
 
-      prevAudio.src = src;
-      return prevAudio;
-    });
-  }, [src]);
+    return () => {
+      audio.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (!audio) {
@@ -55,6 +42,18 @@ export const useAudio = (initialSrc?: string) => {
     const unsubscribe = subscribeToAudioEvents(audio);
     return unsubscribe;
   }, [audio]);
+
+  useEffect(() => {
+    if (!audio || !src || audio.src === src) {
+      return;
+    }
+
+    audio.pause();
+    audio.src = src;
+
+    audio.load();
+    audio.play();
+  }, [audio, src]);
 
   const togglePlay = () => {
     if (!audio) {

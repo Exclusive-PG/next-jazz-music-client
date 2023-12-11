@@ -1,7 +1,6 @@
 "use client";
 import { type Track } from "@prisma/client";
-import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 
 import AudioPlayer from "~/components/audio-kit/audioPlayer";
 
@@ -23,10 +22,14 @@ type Props = React.PropsWithChildren;
 export function AudioProvider({ children }: Props) {
   const [currentTrack, setCurrentTrack] = useState<Track>(defaultTrackData);
   const [playlist, setPlaylist] = useState<Track[]>([]);
+
+  const value = useMemo(
+    () => ({ currentTrack, setCurrentTrack, playlist, setPlaylist }),
+    [currentTrack, setCurrentTrack, playlist, setPlaylist],
+  );
+
   return (
-    <AudioContext.Provider
-      value={{ currentTrack, setCurrentTrack, playlist, setPlaylist }}
-    >
+    <AudioContext.Provider value={value}>
       {children}
       {!!currentTrack && !!playlist ? (
         <AudioPlayer

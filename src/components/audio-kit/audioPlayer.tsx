@@ -65,6 +65,12 @@ const AudioPlayer: React.FC<Props> = ({
   }, [currentTrack, onChangeCurrentTrack, playlist, updateAudioSrc]);
 
   useEffect(() => {
+    if (currentTrack && audio?.src !== currentTrack.url) {
+      updateAudioSrc(currentTrack.url);
+    }
+  }, [audio?.src, currentTrack, updateAudioSrc]);
+
+  useEffect(() => {
     if (!audio) {
       return;
     }
