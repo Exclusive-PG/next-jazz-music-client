@@ -8,7 +8,7 @@ import { type Session } from "next-auth";
 import { useCallback, useEffect, useState } from "react";
 
 //import { AudioPlayer } from "~/components/audio-kit/audioPlayer";
-import { useAudioContext } from "~/app/contexts/audio/provider";
+import { useAudioContext } from "~/app/contexts/audio/context";
 import { Sidebar } from "~/components/sidebar/Sidebar";
 import { TrackItem } from "~/components/tracks/trackItem";
 import { FileDropzone } from "~/components/ui/dropzone";
@@ -22,8 +22,7 @@ export type PropsUploadPage = {
 };
 export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   const [musicUpload, setMusicUpload] = useState<File>();
-  const { currentTrack, playlist, setCurrentTrack, setPlaylist } =
-    useAudioContext();
+  const { currentTrack, setCurrentTrack, setPlaylist } = useAudioContext();
 
   const onDrop = useCallback((acceptedFile: File[]) => {
     if (acceptedFile.length === 0) {
@@ -33,18 +32,14 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   }, []);
   const [progress, setProgress] = useState<number>(0);
   const queryUtils = api.useUtils();
-  useEffect(() => {
-    getTracks();
-  }, []);
 
-  const {
-    data: loadedTracks = [],
-    refetch: getTracks,
-    isFetched,
-  } = api.tracks.getFiles.useQuery(undefined, {
-    refetchOnWindowFocus: false,
-    enabled: false,
-  });
+  const { data: loadedTracks, isFetched } = api.tracks.getFiles.useQuery();
+
+  useEffect(() => {
+    if (loadedTracks) {
+      setPlaylist(loadedTracks);
+    }
+  }, [loadedTracks, setPlaylist]);
 
   const uploadTracks = api.tracks.addFile.useMutation({
     onSuccess: () => {
@@ -82,7 +77,6 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
       url: uploadAction.url!,
       duration,
     });
-    getTracks();
     setProgress(0);
   }
   async function deleteFile(trackId: string, trackRef: string) {
@@ -91,7 +85,6 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
       return;
     }
     await deleteTracks.mutateAsync({ trackId });
-    getTracks();
   }
   async function updateFile(file: File, trackRef: string, trackId: string) {
     const updateAction = await uploadService.updateFile(
@@ -103,13 +96,9 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
       return;
     }
     await updateTracks.mutateAsync({ trackId, url: updateAction.url! });
-    getTracks();
     setProgress(0);
   }
 
-  if (isFetched) {
-    setPlaylist(loadedTracks);
-  }
   return (
     <main className="bg-darkSecondary text-white">
       <Sidebar session={session} />
@@ -147,6 +136,7 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
         </h3>
         <div className="scrollbar flex h-2/4 flex-col gap-5 overflow-y-scroll py-6">
           {isFetched &&
+            loadedTracks?.length &&
             loadedTracks.map((item: Track, index: number) => (
               <TrackItem
                 currentTrackId={currentTrack?.id}
