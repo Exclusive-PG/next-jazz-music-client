@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export const useAudio = (initialSrc?: string) => {
   const DEFAULT_VOLUME = 0.8;
@@ -9,7 +9,6 @@ export const useAudio = (initialSrc?: string) => {
   const [src, setSrc] = useState(initialSrc);
   const [audio, setAudio] = useState<HTMLAudioElement>();
   const [currentTime, setCurrentTime] = useState(0);
-  const [playing, setPlaying] = useState(true);
 
   const subscribeToAudioEvents = (audio: HTMLAudioElement) => {
     const onTimeUpdate = () => {
@@ -59,9 +58,7 @@ export const useAudio = (initialSrc?: string) => {
     if (!audio) {
       return;
     }
-
     audio.paused ? audio.play() : audio.pause();
-    setPlaying(!audio.paused);
   };
 
   const changeVolume = (newValue: number): void => {
@@ -82,8 +79,15 @@ export const useAudio = (initialSrc?: string) => {
     }
 
     const value = Math.min(Math.max(newValue, 0), audio.duration);
-
     audio.currentTime = value;
+    setCurrentTime(audio.currentTime);
+  };
+
+  const previewCurrentTime = (newValue: number) => {
+    if (!audio) {
+      return;
+    }
+    const value = Math.min(Math.max(newValue, 0), audio.duration);
     setCurrentTime(value);
   };
 
@@ -93,11 +97,11 @@ export const useAudio = (initialSrc?: string) => {
 
   return {
     audio,
-    playing,
     currentTime,
     togglePlay,
     changeVolume,
     changeCurrentTime,
     updateAudioSrc,
+    previewCurrentTime,
   } as const;
 };

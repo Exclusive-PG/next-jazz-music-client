@@ -21,13 +21,11 @@ type Props = {
   > | null;
   session: Session | null;
 };
-
+type ItemProvider = {
+  id: string;
+};
 export const LoginForm: NextPage<Props> = ({ providers }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginSchema>();
+  const { register, handleSubmit } = useForm<LoginSchema>();
 
   const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
     await signIn("credentials", { ...data, callbackUrl: "/dashboard" });
@@ -62,7 +60,7 @@ export const LoginForm: NextPage<Props> = ({ providers }) => {
       <div className="flex items-center justify-center pt-4">
         {providers !== null &&
           Object.values(providers)?.map(
-            (item: any) =>
+            (item: ItemProvider) =>
               item.id !== "credentials" && (
                 <div className="justify-content ml-3 flex" key={item.id}>
                   <Button

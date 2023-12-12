@@ -1,5 +1,3 @@
-import { getProviders } from "next-auth/react";
-
 import { Wrapper } from "~/components/wrapper";
 import { getServerAuthSession } from "~/server/auth";
 

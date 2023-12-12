@@ -1,11 +1,8 @@
 import {
   deleteObject,
-  FirebaseStorage,
   getDownloadURL,
-  listAll,
   ref,
   type StorageReference,
-  uploadBytes,
   uploadBytesResumable,
 } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
@@ -42,20 +39,13 @@ class UploadService {
 
     const fullMusicRef = ref(storage, `${this.folderPath}${subMusicRef}`);
     const uploadTask = uploadBytesResumable(fullMusicRef, file);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress = Math.round(
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
-        );
+    uploadTask.on("state_changed", (snapshot) => {
+      const progress = Math.round(
+        (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
+      );
 
-        setProgress?.(progress);
-      },
-      (error) => {
-        console.error(error);
-        Promise.resolve({ status: false });
-      },
-    );
+      setProgress?.(progress);
+    });
     await uploadTask;
 
     const url = await getDownloadURL(fullMusicRef);
@@ -64,9 +54,8 @@ class UploadService {
   }
   public async deleteFile(filePath: string): Promise<PromiseData> {
     const deleteRef = ref(storage, `${this.folderPath}${filePath}`);
-    let deletedFile;
     try {
-      deletedFile = await deleteObject(deleteRef);
+      await deleteObject(deleteRef);
     } catch (error) {
       return Promise.resolve({ status: true, reason: "Error delete file" });
     }
@@ -90,21 +79,12 @@ class UploadService {
       return Promise.reject({ status: false, reason: "File Doesn't Exists!" });
     }
     const uploadTask = uploadBytesResumable(updateRef, file);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress = Math.round(
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
-        );
-
-        setProgress?.(progress);
-
-        console.log(`Updated File: ${progress} %`);
-      },
-      (error) => {
-        console.error(error);
-      },
-    );
+    uploadTask.on("state_changed", (snapshot) => {
+      const progress = Math.round(
+        (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
+      );
+      setProgress?.(progress);
+    });
     await uploadTask;
     const url = await getDownloadURL(updateRef);
     return Promise.resolve({ status: true, url });

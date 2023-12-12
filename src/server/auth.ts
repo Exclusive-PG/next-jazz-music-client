@@ -14,20 +14,15 @@ import { loginSchema } from "~/domains/auth/validAuth";
 import { env } from "~/env.mjs";
 import { db } from "~/server/db";
 
+/* eslint-disable */
 declare module "next-auth" {
-  type Session = {
+  interface Session {
     user: {
       id: string;
-      // ...other properties
-      // role: UserRole;
     } & DefaultSession["user"];
-  } & DefaultSession;
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  }
 }
+/* eslint-enable */
 
 export const authOptions: NextAuthOptions = {
   pages: {
@@ -44,7 +39,7 @@ export const authOptions: NextAuthOptions = {
         },
       };
     },
-    jwt: ({ token, user, account }) => {
+    jwt: ({ token, user }) => {
       if (user) {
         return {
           ...token,

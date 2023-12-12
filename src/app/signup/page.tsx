@@ -4,7 +4,7 @@ import { Wrapper } from "../../components/wrapper";
 
 import { SignUpForm } from "./signupForm";
 
-const SignUpPage = async (): Promise<React.JSX.Element> => {
+const SignUpPage = () => {
   return (
     <main>
       <Wrapper>

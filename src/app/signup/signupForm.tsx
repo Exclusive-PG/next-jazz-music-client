@@ -1,33 +1,21 @@
 "use client";
 
 import { Button } from "@mui/material";
-import { type AppProps } from "next/app";
-import { type NextPage } from "next/types";
-import { signIn } from "next-auth/react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
 import { type LoginSchema } from "~/domains/auth/validAuth";
 
 import { api } from "./../../trpc/react";
 
-type Props = {};
-
-export const SignUpForm: NextPage<Props> = (props) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginSchema>();
+export const SignUpForm = () => {
+  const { register, handleSubmit } = useForm<LoginSchema>();
 
   const registerUser = api.user.registerUser.useMutation();
 
-  const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
+  const onSubmit: SubmitHandler<LoginSchema> = (data) => {
     try {
       registerUser.mutateAsync({ ...data });
-      console.log("Successfully registered");
-    } catch (error) {
-      console.log((error as Error).message);
-    }
+    } catch (error) {}
   };
 
   return (

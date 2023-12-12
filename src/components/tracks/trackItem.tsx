@@ -25,7 +25,7 @@ export const TrackItem: React.FC<Props> = ({
   updateFile,
   handleTrack,
 }) => {
-  const { id, ref, url, name, duration, singer } = track;
+  const { id, ref, name, duration, singer } = track;
   const playingTrackClassName =
     id === currentTrackId
       ? `bg-darkPrimary text-textRed`

@@ -37,7 +37,12 @@ const config = {
       "warn",
       {
         unusedExports: true,
-        ignoreExports: ["**/app/**/page.tsx", "./*.ts", "**/app/**/layout.tsx", "**/app/**/route.ts"],
+        ignoreExports: [
+          "**/app/**/page.tsx",
+          "./*.ts",
+          "**/app/**/layout.tsx",
+          "**/app/**/route.ts",
+        ],
       },
     ],
     "no-restricted-imports": [

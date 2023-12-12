@@ -5,9 +5,7 @@ export class UtilsDate {
     try {
       const helperDate = addSeconds(new Date(0), seconds);
       return format(helperDate, "mm:ss");
-    } catch (e) {
-      console.log((e as Error).message);
-    }
+    } catch (e) {}
   }
   public static async getDuration(src: string): Promise<number> {
     return await new Promise(function (resolve) {

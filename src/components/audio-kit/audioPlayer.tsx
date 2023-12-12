@@ -25,15 +25,14 @@ const AudioPlayer: React.FC<Props> = ({
   onChangeCurrentTrack,
 }) => {
   const { name, singer, duration, url } = currentTrack;
-
   const {
     audio,
-    playing,
     currentTime,
     togglePlay,
     changeVolume,
     changeCurrentTime,
     updateAudioSrc,
+    previewCurrentTime,
   } = useAudio(url);
 
   const nextTrack = useCallback(() => {
@@ -81,7 +80,7 @@ const AudioPlayer: React.FC<Props> = ({
     };
   }, [audio, nextTrack]);
 
-  const onAudioTimeChange: SliderOwnProps["onChangeCommitted"] = (
+  const onAudioTimeChangeCommitted: SliderOwnProps["onChangeCommitted"] = (
     event,
     value,
   ) => {
@@ -89,14 +88,24 @@ const AudioPlayer: React.FC<Props> = ({
     if (newValue === undefined) {
       return;
     }
-
-    changeCurrentTime(newValue);
+    try {
+      audio?.play();
+      changeCurrentTime(newValue);
+    } catch (err) {}
   };
 
-  const onAudioVolumeChange: SliderOwnProps["onChangeCommitted"] = (
-    event,
-    value,
-  ) => {
+  const onAudioTimeChange: SliderOwnProps["onChange"] = (event, value) => {
+    audio?.pause();
+    const newValue = Array.isArray(value) ? value[0] : value;
+    if (newValue === undefined) {
+      return;
+    }
+    try {
+      previewCurrentTime(newValue);
+    } catch (err) {}
+  };
+
+  const onAudioVolumeChange: SliderOwnProps["onChange"] = (event, value) => {
     const newValue = Array.isArray(value) ? value[0] : value;
     if (newValue === undefined) {
       return;
@@ -117,7 +126,7 @@ const AudioPlayer: React.FC<Props> = ({
             className="text-white hover:text-mainRed"
             onClick={togglePlay}
           >
-            {playing ? (
+            {!audio?.paused ? (
               <PauseCircleIcon className="text-5xl hover:text-mainRed" />
             ) : (
               <PlayCircleIcon className="text-5xl hover:text-mainRed" />
@@ -139,10 +148,10 @@ const AudioPlayer: React.FC<Props> = ({
           />
         </div>
         <div className="pl-20">
-          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-center xl:w-2/4">
+          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-center text-white xl:w-2/4">
             {name} ● {singer}
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 text-white">
             <span className="w-10">
               {UtilsDate.normalizeDuration(currentTime)}
             </span>
@@ -156,10 +165,11 @@ const AudioPlayer: React.FC<Props> = ({
                 valueLabelDisplay="auto"
                 valueLabelFormat={UtilsDate.normalizeDuration(currentTime)}
                 className="text-mainRed"
-                onChangeCommitted={onAudioTimeChange}
+                onChange={onAudioTimeChange}
+                onChangeCommitted={onAudioTimeChangeCommitted}
               />
             </Box>
-            <span className="w-10">
+            <span className="w-10 text-white">
               {UtilsDate.normalizeDuration(duration)}
             </span>
           </div>
@@ -172,14 +182,14 @@ const AudioPlayer: React.FC<Props> = ({
               sx={{ mb: 1 }}
               alignItems="center"
             >
-              <VolumeUp />
+              <VolumeUp className="text-white" />
               <Slider
                 defaultValue={0.8}
                 className="text-mainRed"
                 min={0}
                 max={1}
                 step={0.01}
-                onChangeCommitted={onAudioVolumeChange}
+                onChange={onAudioVolumeChange}
               />
             </Stack>
           </Box>

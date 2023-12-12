@@ -42,7 +42,7 @@ export const FileDropzone: React.FC<Props> = ({ onDrop }) => {
     <div className="h-full w-full text-textSecondary">
       <div {...getRootProps({ style })} className="h-3/4">
         <input {...getInputProps()} />
-        <p>Drag 'n' drop some files here, or click to select files</p>
+        <p>Drag &apos;n&apos; drop some files here, or click to select files</p>
       </div>
       {files}
     </div>

@@ -22,7 +22,7 @@ type AudioContextType = {
 };
 
 export const AudioContext = createContext<AudioContextType>({
-  setCurrentTrack: () => {},
+  setCurrentTrack: () => undefined,
   setPlaylist: () => [],
   currentTrack: defaultTrackData,
   playlist: [],

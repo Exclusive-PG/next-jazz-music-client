@@ -20,6 +20,7 @@ import { UtilsDate } from "~/utils/date-time";
 export type PropsUploadPage = {
   session: Session | null;
 };
+
 export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   const [musicUpload, setMusicUpload] = useState<File>();
   const { currentTrack, setCurrentTrack, setPlaylist } = useAudioContext();
@@ -58,8 +59,11 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   });
 
   async function uploadFile() {
+    if (session?.user === undefined) {
+      return;
+    }
     const uploadAction = await uploadService.uploadFile(
-      session?.user.id!,
+      session?.user.id,
       musicUpload!,
       setProgress,
     );
@@ -135,19 +139,19 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
           Your Tracks
         </h3>
         <div className="scrollbar flex h-2/4 flex-col gap-5 overflow-y-scroll py-6">
-          {isFetched &&
-            loadedTracks?.length &&
-            loadedTracks.map((item: Track, index: number) => (
-              <TrackItem
-                currentTrackId={currentTrack?.id}
-                key={item.id}
-                track={item}
-                deleteFile={deleteFile}
-                updateFile={updateFile}
-                handleTrack={setCurrentTrack}
-                index={index + 1}
-              />
-            ))}
+          {isFetched && loadedTracks?.length
+            ? loadedTracks.map((item: Track, index: number) => (
+                <TrackItem
+                  currentTrackId={currentTrack?.id}
+                  key={item.id}
+                  track={item}
+                  deleteFile={deleteFile}
+                  updateFile={updateFile}
+                  handleTrack={setCurrentTrack}
+                  index={index + 1}
+                />
+              ))
+            : ""}
         </div>
       </div>
     </main>

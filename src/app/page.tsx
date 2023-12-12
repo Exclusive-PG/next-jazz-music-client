@@ -1,10 +1,7 @@
 import Link from "next/link";
-import { getServerSession } from "next-auth/next";
-import { getProviders } from "next-auth/react";
 
 import { Wrapper } from "~/components/wrapper";
 import { getServerAuthSession } from "~/server/auth";
-import { api } from "~/trpc/react";
 
 const Home = async (): Promise<React.JSX.Element> => {
   const session = await getServerAuthSession();
