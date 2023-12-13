@@ -1,5 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcrypt";
+import { cookies } from "next/headers";
 import {
   type DefaultSession,
   getServerSession,
@@ -110,6 +111,10 @@ export const authOptions: NextAuthOptions = {
             sessionToken,
           },
         });
+      }
+      const cookie = cookies().get("next-auth.session-token");
+      if (cookie) {
+        cookies().delete("next-auth.session-token");
       }
     },
   },

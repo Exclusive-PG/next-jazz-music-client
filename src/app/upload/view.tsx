@@ -128,7 +128,7 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
         <div className="flex justify-center gap-10">
           <Button
             onClick={uploadFile}
-            className="gap-1 border-textSecondary text-textSecondary hover:border-mainRed hover:bg-mainRed hover:text-white"
+            className="gap-1  border-textSecondary text-textSecondary hover:border-mainRed hover:bg-mainRed hover:text-white"
             variant="outlined"
           >
             <CloudUploadIcon />

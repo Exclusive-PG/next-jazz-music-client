@@ -6,6 +6,7 @@ import NextAuth, { type NextAuthOptions } from "next-auth";
 import { decode, encode } from "next-auth/jwt";
 import { v4 as uuidv4 } from "uuid";
 
+import { env } from "~/env.mjs";
 import { authOptions } from "~/server/auth";
 
 const generateSessionToken = () => {
@@ -45,12 +46,15 @@ function handler(
 
             cookies().set("next-auth.session-token", sessionToken, {
               expires: sessionExpiry,
+              httpOnly: true,
+              secure: true,
             });
           }
         }
         return true;
       },
     },
+    secret: env.NEXTAUTH_SECRET,
     jwt: {
       ...authOptions.jwt,
       encode: async (arg) => {

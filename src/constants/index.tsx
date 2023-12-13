@@ -1,4 +1,5 @@
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import HouseIcon from "@mui/icons-material/House";
 import { type SvgIconOwnProps } from "@mui/material";
 
@@ -17,4 +18,5 @@ export const navList: Array<PropsNavList> = [
     link: "/upload",
     icon: <CloudUploadIcon />,
   },
+  { id: 3, title: "Dashboard", link: "/dashboard", icon: <DashboardIcon /> },
 ];

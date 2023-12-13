@@ -2,7 +2,7 @@
 import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Button } from "@mui/material";
-import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 import { type PropsUploadPage } from "~/app/upload/view";
 import { navList } from "~/constants";
@@ -25,15 +25,11 @@ export const Sidebar: React.FC<PropsUploadPage> = ({ session }) => {
         <div className="absolute bottom-24 left-0 w-full">
           {session && (
             <Button
+              onClick={() => signOut()}
               startIcon={<LogoutIcon />}
               className="w-full p-2 normal-case text-white transition duration-100 ease-in-out hover:bg-mainRed"
             >
-              <Link
-                href={"/api/auth/signout"}
-                className="text-white no-underline"
-              >
-                Sign Out
-              </Link>
+              <span className="text-white no-underline">Sign Out</span>
             </Button>
           )}
         </div>

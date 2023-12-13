@@ -6,6 +6,7 @@ export default {
   corePlugins: {
     preflight: false,
   },
+  important: true,
   theme: {
     extend: {
       screens: {
