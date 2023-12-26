@@ -52,7 +52,7 @@ export const TrackItem: React.FC<Props> = ({
       >
         {name}
       </span>
-      <span className="px-10 max-md:hidden">{singer}</span>
+      <span className="px-10 max-lg:hidden">{singer}</span>
       <span className="pl-10">{UtilsDate.normalizeDuration(duration)}</span>
       <Button className="relative m-0 w-5 ">
         <CloudUploadIcon className="m-0 text-textSecondary hover:text-textRed" />

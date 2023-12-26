@@ -7,15 +7,7 @@ import { DashView } from "./view";
 const DashBoard = async (): Promise<React.JSX.Element> => {
   const session = await getServerAuthSession();
   SessionUtils.checkSession(session);
-  return (
-    <div className="radius flex flex-col items-center gap-2 border p-4">
-      <main>
-        <Wrapper>
-          <DashView session={session} />
-        </Wrapper>
-      </main>
-    </div>
-  );
+  return (<DashView session={session} />);
 };
 
 export default DashBoard;

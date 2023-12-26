@@ -15,6 +15,7 @@ import { FileDropzone } from "~/components/ui/dropzone";
 import { uploadService } from "~/services/upload";
 import { api } from "~/trpc/react";
 import { UtilsDate } from "~/utils/date-time";
+import { WrapperSidebar } from "~/components/wrapperSiderbar";
 
 //TO DO: add full responsive page
 export type PropsUploadPage = {
@@ -104,10 +105,7 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   }
 
   return (
-    <main className="bg-darkSecondary text-white">
-      <Sidebar session={session} />
-
-      <div className="ml-72 h-screen max-w-full p-4">
+    <WrapperSidebar session={session}>
         <h3 className="my-2 text-base text-white sm:text-base lg:text-xl lg:leading-10 xl:text-2xl ">
           Drop Zone
         </h3>
@@ -153,7 +151,6 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
               ))
             : ""}
         </div>
-      </div>
-    </main>
+    </WrapperSidebar>
   );
 };
