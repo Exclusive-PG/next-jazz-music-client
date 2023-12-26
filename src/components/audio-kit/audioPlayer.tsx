@@ -1,121 +1,148 @@
 "use client";
-import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
-import PauseCircleIcon from "@mui/icons-material/PauseCircle";
-import SkipNextIcon from "@mui/icons-material/SkipNext";
-import Image from "next/image";
-import { Button, Box, Slider, Stack } from "@mui/material";
-import VolumeUp from "@mui/icons-material/VolumeUp";
-import { Track } from "@prisma/client";
-import { useEffect, useRef, useState } from "react";
-import { Utils } from "~/utils/date-time";
 
-type AudioParam = {
-  src: string;
-  options: {
-    volume?: number;
-    playbackRate?: number;
-  };
-};
+import PauseCircleIcon from "@mui/icons-material/PauseCircle";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import SkipNextIcon from "@mui/icons-material/SkipNext";
+import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
+import VolumeUp from "@mui/icons-material/VolumeUp";
+import { Box, Button, Slider, type SliderOwnProps, Stack } from "@mui/material";
+import { type Track } from "@prisma/client";
+import Image from "next/image";
+import { useCallback, useEffect } from "react";
+
+import { useAudio } from "~/hooks/useAudio";
+import { UtilsDate } from "~/utils/date-time";
+
 type Props = {
   onChangeCurrentTrack: (track: Track) => void;
   currentTrack: Track;
   playlist: Array<Track>;
 };
 
-const useAudio = ({ src, options }: AudioParam) => {
-  const { volume, playbackRate } = options;
-  const DEFAULT_VOLUME = 0.8;
-  const DEFAULT_PLAYBACKRATE = 1;
-  const [audio,setAudio] = useState(new Audio(src));
-  return audio;
-};
-
-export const AudioPlayer: React.FC<Props> = ({
+const AudioPlayer: React.FC<Props> = ({
   currentTrack,
   playlist,
   onChangeCurrentTrack,
 }) => {
   const { name, singer, duration, url } = currentTrack;
-  const audio = useAudio({ src: url, options: {} });
-  const [playing, setPlaying] = useState(true);
-  const [currentTime, setCurrentTime] = useState(0);
+  const {
+    audio,
+    currentTime,
+    togglePlay,
+    changeVolume,
+    changeCurrentTime,
+    updateAudioSrc,
+    previewCurrentTime,
+  } = useAudio(url);
+
+  const nextTrack = useCallback(() => {
+    if (!playlist?.length && !currentTrack) {
+      return;
+    }
+
+    let index = playlist.findIndex((item) => item.id === currentTrack.id) + 1;
+    if (index === playlist.length) {
+      index = 0;
+    }
+
+    updateAudioSrc(playlist[index]!.url);
+    onChangeCurrentTrack?.(playlist[index]!);
+  }, [currentTrack, onChangeCurrentTrack, playlist, updateAudioSrc]);
+
+  const prevTrack = useCallback(() => {
+    if (!playlist?.length && !currentTrack) {
+      return;
+    }
+
+    let index = playlist.findIndex((item) => item.id === currentTrack.id) - 1;
+    if (index < 0) {
+      index = playlist.length - 1;
+    }
+
+    updateAudioSrc(playlist[index]!.url);
+    onChangeCurrentTrack?.(playlist[index]!);
+  }, [currentTrack, onChangeCurrentTrack, playlist, updateAudioSrc]);
 
   useEffect(() => {
-    audio.addEventListener("timeupdate", () => {
-      const percent = audio.currentTime / audio.duration;
-      setCurrentTime(audio.currentTime);
-    });
-  }, []);
+    if (currentTrack && audio?.src !== currentTrack.url) {
+      updateAudioSrc(currentTrack.url);
+    }
+  }, [audio?.src, currentTrack, updateAudioSrc]);
 
   useEffect(() => {
-    setTimeout(() => {
-      audio.src = url;
-      audio.play();
-      setPlaying(!audio.paused);
-    }, 1);
+    if (!audio) {
+      return;
+    }
 
-    audio.addEventListener("ended", () => {
-      nextTrack();
-    });
-  }, [currentTrack]);
+    audio.addEventListener("ended", nextTrack);
+    return () => {
+      audio.removeEventListener("ended", nextTrack);
+    };
+  }, [audio, nextTrack]);
 
-  const nextTrack = () => {
-    if (!playlist && !currentTrack) return;
-    let index = playlist.findIndex((item) => item.id === currentTrack.id);
-    ++index;
-    let currentIndexTrack = index === playlist.length ? (index = 0) : index;
-    audio.src = playlist[currentIndexTrack]!.url;
-    onChangeCurrentTrack?.(playlist[currentIndexTrack]!);
-  };
-  const prevTrack = () => {
-    if (!playlist && !currentTrack) return;
-    let index = playlist.findIndex((item) => item.id === currentTrack.id);
-    index--;
-    let currentIndexTrack = index < 0 ? playlist.length - 1 : index;
-    audio.src = playlist[currentIndexTrack]!.url;
-    onChangeCurrentTrack?.(playlist[currentIndexTrack]!);
+  const onAudioTimeChangeCommitted: SliderOwnProps["onChangeCommitted"] = (
+    event,
+    value,
+  ) => {
+    const newValue = Array.isArray(value) ? value[0] : value;
+    if (newValue === undefined) {
+      return;
+    }
+    try {
+      audio?.play();
+      changeCurrentTime(newValue);
+    } catch (err) {}
   };
 
-  const toggle = () => {
-    audio.paused ? audio.play() : audio.pause();
-    setPlaying(!audio.paused);
+  const onAudioTimeChange: SliderOwnProps["onChange"] = (event, value) => {
+    audio?.pause();
+    const newValue = Array.isArray(value) ? value[0] : value;
+    if (newValue === undefined) {
+      return;
+    }
+    try {
+      previewCurrentTime(newValue);
+    } catch (err) {}
   };
 
-  const changeVolume = (event: Event, newValue: number | number[]) => {
-    const DEFAULT_LOW_VOLUME = 0;
-    const DEFAULT_HIGH_VOLUME = 1;
-    if (newValue < DEFAULT_LOW_VOLUME || newValue > DEFAULT_HIGH_VOLUME) return;
-    const value: number = Array.isArray(newValue) ? newValue[0]! : newValue;
-    audio.volume = value;
+  const onAudioVolumeChange: SliderOwnProps["onChange"] = (event, value) => {
+    const newValue = Array.isArray(value) ? value[0] : value;
+    if (newValue === undefined) {
+      return;
+    }
+
+    changeVolume(newValue);
   };
-  
-  const changeCurrentTime = (event: Event, newValue: number | number[]) => {
-    if (newValue < 0 || newValue > duration) return;
-    const value: number = Array.isArray(newValue) ? newValue[0]! : newValue;
-    setCurrentTime(value);
-    audio.currentTime = value;
-  };
+
   return (
     <div className="fixed bottom-0 left-0  h-20 w-full bg-darkPrimary">
-      <div className="flex items-center p-3">
-        <div className="flex w-full max-w-xs justify-between pl-1">
-          <Button className="text-white hover:text-mainRed" onClick={prevTrack}>
-            <SkipPreviousIcon className=" text-5xl" />
+      <div className="flex items-center p-3 max-xl:justify-center max-xl:gap-10">
+        <div className="flex w-full max-w-xs justify-between pl-1 max-xl:max-w-[200px]">
+          <Button
+            className="text-white hover:text-mainRed max-sm:hidden"
+            onClick={prevTrack}
+          >
+            <SkipPreviousIcon className="text-5xl" />
           </Button>
 
-          <Button className="text-white hover:text-mainRed" onClick={toggle}>
-            {playing ? (
+          <Button
+            className="text-white hover:text-mainRed"
+            onClick={togglePlay}
+          >
+            {!audio?.paused ? (
               <PauseCircleIcon className="text-5xl hover:text-mainRed" />
             ) : (
               <PlayCircleIcon className="text-5xl hover:text-mainRed" />
             )}
           </Button>
-          <Button className="text-white hover:text-mainRed" onClick={nextTrack}>
+          <Button
+            className="text-white hover:text-mainRed max-sm:hidden"
+            onClick={nextTrack}
+          >
             <SkipNextIcon className="text-5xl hover:text-mainRed" />
           </Button>
         </div>
-        <div className="pl-10">
+        <div className="pl-10 max-lg:hidden max-lg:p-0">
           <Image
             src="/song.png"
             alt="poster"
@@ -126,13 +153,15 @@ export const AudioPlayer: React.FC<Props> = ({
             quality={100}
           />
         </div>
-        <div className="pl-20">
-          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-center xl:w-2/4">
+        <div className="pl-20 max-2xl:pl-5">
+          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-center text-white max-2xl:w-52">
             {name} ● {singer}
           </div>
-          <div className="flex items-center gap-5">
-            <span className="w-10">{Utils.normalizeDuration(currentTime)}</span>
-            <Box sx={{ width: 600 }} className="">
+          <div className="flex items-center gap-5 text-white">
+            <span className="w-10">
+              {UtilsDate.normalizeDuration(currentTime)}
+            </span>
+            <Box className="w-[600px] max-2xl:w-[400px] max-xl:w-[200px] max-lg:w-[100px]">
               <Slider
                 defaultValue={50}
                 min={0}
@@ -140,30 +169,33 @@ export const AudioPlayer: React.FC<Props> = ({
                 value={currentTime}
                 aria-label="progress-song"
                 valueLabelDisplay="auto"
-                valueLabelFormat={Utils.normalizeDuration(currentTime)}
+                valueLabelFormat={UtilsDate.normalizeDuration(currentTime)}
                 className="text-mainRed"
-                onChange={changeCurrentTime}
+                onChange={onAudioTimeChange}
+                onChangeCommitted={onAudioTimeChangeCommitted}
               />
             </Box>
-            <span className="w-10">{Utils.normalizeDuration(duration)}</span>
+            <span className="w-10 text-white">
+              {UtilsDate.normalizeDuration(duration)}
+            </span>
           </div>
         </div>
-        <div className="flex items-center pl-20">
-          <Box sx={{ width: 150 }}>
+        <div className="flex items-center pl-20 max-lg:pl-0 max-sm:hidden">
+          <Box className="w-36 max-lg:w-24 max-md:w-20">
             <Stack
               spacing={2}
               direction="row"
               sx={{ mb: 1 }}
               alignItems="center"
             >
-              <VolumeUp />
+              <VolumeUp className="text-white" />
               <Slider
                 defaultValue={0.8}
                 className="text-mainRed"
                 min={0}
                 max={1}
                 step={0.01}
-                onChange={changeVolume}
+                onChange={onAudioVolumeChange}
               />
             </Stack>
           </Box>
@@ -172,3 +204,4 @@ export const AudioPlayer: React.FC<Props> = ({
     </div>
   );
 };
+export default AudioPlayer;

@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    assignees:
+      - "Exclusive-PG"
+    labels:
+      - "github-actions"
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    assignees:
+      - "Exclusive-PG"
+    labels:
+      - "npm"
+      - "dependencies"
+    open-pull-requests-limit: 3
+

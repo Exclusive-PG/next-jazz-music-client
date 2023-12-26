@@ -1,45 +1,47 @@
 "use client";
 
-import { Session } from "next-auth";
-import { NextPage } from "next/types";
-import { useCallback, useEffect, useState } from "react";
-import { Box, Button, LinearProgress } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { uploadService } from "~/services/upload";
-import { api } from "~/trpc/react";
+import { Box, Button, LinearProgress } from "@mui/material";
+import { type Track } from "@prisma/client";
+import { type NextPage } from "next/types";
+import { type Session } from "next-auth";
+import { useCallback, useEffect, useState } from "react";
+
+//import { AudioPlayer } from "~/components/audio-kit/audioPlayer";
+import { useAudioContext } from "~/app/contexts/audio/context";
 import { Sidebar } from "~/components/sidebar/Sidebar";
-import { Track } from "@prisma/client";
 import { TrackItem } from "~/components/tracks/trackItem";
 import { FileDropzone } from "~/components/ui/dropzone";
-import { AudioPlayer } from "~/components/audio-kit/audioPlayer";
-import { Utils } from "~/utils/date-time";
+import { uploadService } from "~/services/upload";
+import { api } from "~/trpc/react";
+import { UtilsDate } from "~/utils/date-time";
+import { WrapperSidebar } from "~/components/wrapperSiderbar";
 
 //TO DO: add full responsive page
 export type PropsUploadPage = {
   session: Session | null;
 };
+
 export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   const [musicUpload, setMusicUpload] = useState<File>();
+  const { currentTrack, setCurrentTrack, setPlaylist } = useAudioContext();
+
   const onDrop = useCallback((acceptedFile: File[]) => {
-    if (acceptedFile.length === 0) return;
+    if (acceptedFile.length === 0) {
+      return;
+    }
     setMusicUpload(acceptedFile[0]);
   }, []);
-
   const [progress, setProgress] = useState<number>(0);
-  const [currentTrack, setCurrentTrack] = useState<Track>();
   const queryUtils = api.useUtils();
-  useEffect(() => {
-    getTracks();
-  }, []);
 
-  const {
-    data: loadedTracks = [],
-    refetch: getTracks,
-    isFetched,
-  } = api.tracks.getFiles.useQuery(undefined, {
-    refetchOnWindowFocus: false,
-    enabled: false,
-  });
+  const { data: loadedTracks, isFetched } = api.tracks.getFiles.useQuery();
+
+  useEffect(() => {
+    if (loadedTracks) {
+      setPlaylist(loadedTracks);
+    }
+  }, [loadedTracks, setPlaylist]);
 
   const uploadTracks = api.tracks.addFile.useMutation({
     onSuccess: () => {
@@ -58,15 +60,20 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
   });
 
   async function uploadFile() {
+    if (session?.user === undefined) {
+      return;
+    }
     const uploadAction = await uploadService.uploadFile(
-      session?.user.id!,
+      session?.user.id,
       musicUpload!,
       setProgress,
     );
 
-    if (!uploadAction.status) return;
+    if (!uploadAction.status) {
+      return;
+    }
 
-    const duration: number = await Utils.getDuration(uploadAction.url!);
+    const duration: number = await UtilsDate.getDuration(uploadAction.url!);
 
     await uploadTracks.mutateAsync({
       singer: "Unknown",
@@ -75,14 +82,14 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
       url: uploadAction.url!,
       duration,
     });
-    getTracks();
     setProgress(0);
   }
   async function deleteFile(trackId: string, trackRef: string) {
     const deleteAction = await uploadService.deleteFile(trackRef);
-    if (!deleteAction.status) return;
+    if (!deleteAction.status) {
+      return;
+    }
     await deleteTracks.mutateAsync({ trackId });
-    getTracks();
   }
   async function updateFile(file: File, trackRef: string, trackId: string) {
     const updateAction = await uploadService.updateFile(
@@ -90,17 +97,15 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
       file,
       setProgress,
     );
-    if (!updateAction.status) return;
+    if (!updateAction.status) {
+      return;
+    }
     await updateTracks.mutateAsync({ trackId, url: updateAction.url! });
-    getTracks();
     setProgress(0);
   }
 
   return (
-    <main className="bg-darkSecondary text-white">
-      <Sidebar session={session} />
-
-      <div className="ml-72 h-screen max-w-full p-4">
+    <WrapperSidebar session={session}>
         <h3 className="my-2 text-base text-white sm:text-base lg:text-xl lg:leading-10 xl:text-2xl ">
           Drop Zone
         </h3>
@@ -121,7 +126,7 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
         <div className="flex justify-center gap-10">
           <Button
             onClick={uploadFile}
-            className="gap-1 border-textSecondary text-textSecondary hover:border-mainRed hover:bg-mainRed hover:text-white"
+            className="gap-1  border-textSecondary text-textSecondary hover:border-mainRed hover:bg-mainRed hover:text-white"
             variant="outlined"
           >
             <CloudUploadIcon />
@@ -132,28 +137,20 @@ export const UploadView: NextPage<PropsUploadPage> = ({ session }) => {
           Your Tracks
         </h3>
         <div className="scrollbar flex h-2/4 flex-col gap-5 overflow-y-scroll py-6">
-          {isFetched &&
-            loadedTracks!.map((item: Track, index: number) => (
-              <TrackItem
-                currentTrackId={currentTrack?.id}
-                key={item.id}
-                track={item}
-                deleteFile={deleteFile}
-                updateFile={updateFile}
-                handleTrack={setCurrentTrack}
-                index={index + 1}
-              />
-            ))}
+          {isFetched && loadedTracks?.length
+            ? loadedTracks.map((item: Track, index: number) => (
+                <TrackItem
+                  currentTrackId={currentTrack?.id}
+                  key={item.id}
+                  track={item}
+                  deleteFile={deleteFile}
+                  updateFile={updateFile}
+                  handleTrack={setCurrentTrack}
+                  index={index + 1}
+                />
+              ))
+            : ""}
         </div>
-      </div>
-
-      {!!currentTrack && !!loadedTracks && (
-        <AudioPlayer
-          currentTrack={currentTrack}
-          playlist={loadedTracks}
-          onChangeCurrentTrack={setCurrentTrack}
-        />
-      )}
-    </main>
+    </WrapperSidebar>
   );
 };

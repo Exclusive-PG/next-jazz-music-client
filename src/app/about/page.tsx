@@ -1,4 +1,5 @@
 import { Wrapper } from "../../components/wrapper";
+
 import { AboutView } from "./view";
 
 const AboutPage: React.FC = () => {

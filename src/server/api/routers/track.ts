@@ -1,10 +1,6 @@
-import { TRPCError } from "@trpc/server";
-import { string, z } from "zod";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
+import { z } from "zod";
+
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const trackRouter = createTRPCRouter({
   getFiles: protectedProcedure.query(async ({ ctx }) => {
@@ -52,9 +48,7 @@ export const trackRouter = createTRPCRouter({
             userId: ctx.session.user.id,
           },
         });
-      } catch (error) {
-        console.log(error);
-      }
+      } catch (error) {}
     }),
   updateFile: protectedProcedure
     .input(

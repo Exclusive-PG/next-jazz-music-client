@@ -1,9 +1,11 @@
 import { getServerAuthSession } from "~/server/auth";
-import { Wrapper } from "~/components/wrapper";
+import { SessionUtils } from "~/utils/session";
+
 import { UploadView } from "./view";
-import { Sidebar } from "~/components/sidebar/Sidebar";
+
 const UploadPage = async (): Promise<React.JSX.Element> => {
   const session = await getServerAuthSession();
+  SessionUtils.checkSession(session);
   return <UploadView session={session} />;
 };
 

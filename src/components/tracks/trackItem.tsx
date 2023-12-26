@@ -1,9 +1,10 @@
-import { Button } from "@mui/material";
-import { Track } from "@prisma/client";
-import DeleteIcon from "@mui/icons-material/Delete";
+import AlbumIcon from "@mui/icons-material/Album";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import Image from "next/image";
-import { Utils } from "~/utils/date-time";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Button } from "@mui/material";
+import { type Track } from "@prisma/client";
+
+import { UtilsDate } from "~/utils/date-time";
 
 type Props = {
   track: Track;
@@ -24,12 +25,12 @@ export const TrackItem: React.FC<Props> = ({
   updateFile,
   handleTrack,
 }) => {
-  const { id, ref, url, name, duration, singer } = track;
+  const { id, ref, name, duration, singer } = track;
   const playingTrackClassName =
     id === currentTrackId
       ? `bg-darkPrimary text-textRed`
       : `hover:bg-darkPrimary hover:text-textRed`;
-
+  const playingTrackIconClassName = id === currentTrackId && "animate-ping";
   const handelFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
 
@@ -42,25 +43,19 @@ export const TrackItem: React.FC<Props> = ({
       className={`flex flex-nowrap items-center gap-2 rounded-md  p-2 text-textSecondary transition duration-200 ease-in-out hover:cursor-pointer ${playingTrackClassName} max-w-full`}
     >
       <span>{index}</span>
-      <Image
-        src="/background.jpg"
-        alt="poster"
-        width={60}
-        height={60}
-        objectFit="contain"
-        className="ml-2 rounded-md"
-        quality={100}
-      />
+      <div className="rounded-lg bg-darkSecondary p-4 ">
+        <AlbumIcon className={`${playingTrackIconClassName}`} />
+      </div>
       <span
         onClick={() => handleTrack(track)}
         className="w-2/4 overflow-hidden text-ellipsis whitespace-nowrap xl:w-3/6"
       >
         {name}
       </span>
-      <span className="max-md:hidden px-10">{singer}</span>
-      <span className="pl-10">{Utils.normalizeDuration(duration)}</span>
-      <Button className="relative m-0 w-5 text-textSecondary hover:text-textRed">
-        <CloudUploadIcon className="m-0 hover:text-textRed" />
+      <span className="px-10 max-lg:hidden">{singer}</span>
+      <span className="pl-10">{UtilsDate.normalizeDuration(duration)}</span>
+      <Button className="relative m-0 w-5 ">
+        <CloudUploadIcon className="m-0 text-textSecondary hover:text-textRed" />
         <input
           onChange={handelFileChange}
           type="file"
@@ -69,9 +64,9 @@ export const TrackItem: React.FC<Props> = ({
       </Button>
       <Button
         onClick={() => deleteFile?.(id, ref)}
-        className="relative m-0 w-5 text-textSecondary hover:text-textRed "
+        className="relative m-0 w-5 "
       >
-        <DeleteIcon className="hover:text-textRed " />
+        <DeleteIcon className="text-textSecondary hover:text-textRed" />
       </Button>
     </div>
   );

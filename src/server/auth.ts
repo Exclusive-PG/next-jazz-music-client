@@ -1,32 +1,29 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import bcrypt from "bcrypt";
+import { cookies } from "next/headers";
 import {
-  getServerSession,
   type DefaultSession,
+  getServerSession,
   type NextAuthOptions,
 } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GithubProvider from "next-auth/providers/github";
 import DiscordProvider from "next-auth/providers/discord";
+import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+
+import { loginSchema } from "~/domains/auth/validAuth";
 import { env } from "~/env.mjs";
 import { db } from "~/server/db";
-import { loginSchema } from "~/domains/auth/validAuth";
-import bcrypt from "bcrypt";
 
+/* eslint-disable */
 declare module "next-auth" {
-  interface Session extends DefaultSession {
+  interface Session {
     user: {
       id: string;
-      // ...other properties
-      // role: UserRole;
     } & DefaultSession["user"];
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
 }
+/* eslint-enable */
 
 export const authOptions: NextAuthOptions = {
   pages: {
@@ -43,7 +40,7 @@ export const authOptions: NextAuthOptions = {
         },
       };
     },
-    jwt: ({ token, user, account }) => {
+    jwt: ({ token, user }) => {
       if (user) {
         return {
           ...token,
@@ -85,7 +82,9 @@ export const authOptions: NextAuthOptions = {
         const cred = await loginSchema.parseAsync(credentials);
         const user = await db.user.findFirst({ where: { email: cred.email } });
 
-        if (!user) return null;
+        if (!user) {
+          return null;
+        }
 
         const isValidPassword = bcrypt.compareSync(
           cred.password,
@@ -112,6 +111,10 @@ export const authOptions: NextAuthOptions = {
             sessionToken,
           },
         });
+      }
+      const cookie = cookies().get("next-auth.session-token");
+      if (cookie) {
+        cookies().delete("next-auth.session-token");
       }
     },
   },

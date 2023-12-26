@@ -1,10 +1,12 @@
-import NextAuth, { type NextAuthOptions } from "next-auth";
-import { type NextRequest, type NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { v4 as uuidv4 } from "uuid";
-import { encode, decode } from "next-auth/jwt";
 
 import { cookies } from "next/headers";
+import { type NextRequest, type NextResponse } from "next/server";
+import NextAuth, { type NextAuthOptions } from "next-auth";
+import { decode, encode } from "next-auth/jwt";
+import { v4 as uuidv4 } from "uuid";
+
+import { env } from "~/env.mjs";
 import { authOptions } from "~/server/auth";
 
 const generateSessionToken = () => {
@@ -36,7 +38,6 @@ function handler(
 
             const sessionExpiry = getExpiryDate(authOptions.session!.maxAge!);
 
-
             await authOptions.adapter!.createSession?.({
               sessionToken,
               userId: user.id,
@@ -45,19 +46,24 @@ function handler(
 
             cookies().set("next-auth.session-token", sessionToken, {
               expires: sessionExpiry,
+              httpOnly: true,
+              secure: true,
             });
           }
         }
         return true;
       },
     },
+    secret: env.NEXTAUTH_SECRET,
     jwt: {
       ...authOptions.jwt,
       encode: async (arg) => {
         if (isCredentialsCallback) {
           const cookie = cookies().get("next-auth.session-token");
 
-          if (cookie) return cookie.value;
+          if (cookie) {
+            return cookie.value;
+          }
           return "";
         }
 

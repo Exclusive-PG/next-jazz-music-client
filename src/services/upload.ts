@@ -1,15 +1,13 @@
-import { storage } from "~/firebase/init";
-import { v4 as uuidv4 } from "uuid";
 import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  FirebaseStorage,
-  listAll,
-  StorageReference,
-  uploadBytesResumable,
   deleteObject,
+  getDownloadURL,
+  ref,
+  type StorageReference,
+  uploadBytesResumable,
 } from "firebase/storage";
+import { v4 as uuidv4 } from "uuid";
+
+import { storage } from "~/firebase/init";
 
 type PromiseData = {
   status: boolean;
@@ -33,26 +31,21 @@ class UploadService {
     file: File,
     setProgress?: (percents: number) => void,
   ): Promise<PromiseData> {
-    if (!file) return Promise.resolve({ status: false });
+    if (!file) {
+      return Promise.resolve({ status: false });
+    }
 
     const subMusicRef = `${userId}/${uuidv4()}`;
-  
+
     const fullMusicRef = ref(storage, `${this.folderPath}${subMusicRef}`);
     const uploadTask = uploadBytesResumable(fullMusicRef, file);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress = Math.round(
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
-        );
+    uploadTask.on("state_changed", (snapshot) => {
+      const progress = Math.round(
+        (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
+      );
 
-        setProgress?.(progress);
-      },
-      (error) => {
-        console.error(error);
-        Promise.resolve({ status: false });
-      },
-    );
+      setProgress?.(progress);
+    });
     await uploadTask;
 
     const url = await getDownloadURL(fullMusicRef);
@@ -61,9 +54,8 @@ class UploadService {
   }
   public async deleteFile(filePath: string): Promise<PromiseData> {
     const deleteRef = ref(storage, `${this.folderPath}${filePath}`);
-    let deletedFile;
     try {
-      deletedFile = await deleteObject(deleteRef);
+      await deleteObject(deleteRef);
     } catch (error) {
       return Promise.resolve({ status: true, reason: "Error delete file" });
     }
@@ -75,31 +67,24 @@ class UploadService {
     file: File,
     setProgress?: (percents: number) => void,
   ): Promise<PromiseData> {
-    if (!file)
+    if (!file) {
       return Promise.reject({ status: false, reason: "File Not Found!" });
+    }
 
     const updateRef = ref(storage, `${this.folderPath}${filePath}`);
 
     const fileIsExists = (await this.checkIfFileExists(updateRef)).status;
 
-    if (!fileIsExists)
+    if (!fileIsExists) {
       return Promise.reject({ status: false, reason: "File Doesn't Exists!" });
+    }
     const uploadTask = uploadBytesResumable(updateRef, file);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress = Math.round(
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
-        );
-
-        setProgress?.(progress);
-
-        console.log(`Updated File: ${progress} %`);
-      },
-      (error) => {
-        console.error(error);
-      },
-    );
+    uploadTask.on("state_changed", (snapshot) => {
+      const progress = Math.round(
+        (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
+      );
+      setProgress?.(progress);
+    });
     await uploadTask;
     const url = await getDownloadURL(updateRef);
     return Promise.resolve({ status: true, url });

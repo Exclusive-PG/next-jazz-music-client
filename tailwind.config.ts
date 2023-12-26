@@ -1,10 +1,12 @@
 import { type Config } from "tailwindcss";
 import { fontFamily, screens } from "tailwindcss/defaultTheme";
+
 export default {
   content: ["./src/**/*.tsx"],
   corePlugins: {
     preflight: false,
   },
+  important: true,
   theme: {
     extend: {
       screens: {

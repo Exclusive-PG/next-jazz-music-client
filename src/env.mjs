@@ -73,7 +73,8 @@ export const env = createEnv({
     NEXT_PUBLIC_FB_authDomain: process.env.NEXT_PUBLIC_FB_authDomain,
     NEXT_PUBLIC_FB_projectId: process.env.NEXT_PUBLIC_FB_projectId,
     NEXT_PUBLIC_FB_storageBucket: process.env.NEXT_PUBLIC_FB_storageBucket,
-    NEXT_PUBLIC_FB_messagingSenderId: process.env.NEXT_PUBLIC_FB_messagingSenderId,
+    NEXT_PUBLIC_FB_messagingSenderId:
+      process.env.NEXT_PUBLIC_FB_messagingSenderId,
     NEXT_PUBLIC_FB_appId: process.env.NEXT_PUBLIC_FB_appId,
     NEXT_PUBLIC_FB_measurementId: process.env.NEXT_PUBLIC_FB_measurementId,
   },

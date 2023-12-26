@@ -37,7 +37,12 @@ const config = {
       "warn",
       {
         unusedExports: true,
-        ignoreExports: ["**/app/**/page.tsx", "./*.ts", "**/app/**/layout.tsx"],
+        ignoreExports: [
+          "**/app/**/page.tsx",
+          "./*.ts",
+          "**/app/**/layout.tsx",
+          "**/app/**/route.ts",
+        ],
       },
     ],
     "no-restricted-imports": [
@@ -97,6 +102,8 @@ const config = {
       },
     ],
     "import/newline-after-import": "error",
+
+    "@typescript-eslint/no-floating-promises": "off",
   },
 };
 
